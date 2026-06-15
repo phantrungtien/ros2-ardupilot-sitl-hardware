@@ -200,7 +200,7 @@ minicom -D /dev/ttyACM0 -b 921600
 │   │       └── ardupilot_sitl.launch.py
 │   └── simtofly_mavros_real/          # Real hardware config
 │       └── launch/
-│           └── cube_orange.launch.py
+│           └── pixhawk6c.launch.py
 ├── scripts/                      ← Mission scripts work for both!
 ├── launch/
 │   ├── start_mavros.sh          ← For SITL
@@ -223,7 +223,7 @@ cd ~/ros2-ardupilot-sitl-hardware
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ros2-ardupilot-sitl-hardware/install/setup.bash
-ros2 launch simtofly_mavros_real cube_orange.launch.py
+ros2 launch simtofly_mavros_real pixhawk6c.launch.py
 ```
 
 ---
@@ -414,7 +414,7 @@ python3 scripts/missions/mission_simple.py
 | Aspect | SITL | Real Hardware |
 |--------|------|---------------|
 | **Connection** | UDP (`udp://:14550@`) | Serial (`/dev/ttyACM0:921600`) |
-| **Launch File** | `ardupilot_sitl.launch.py` | `cube_orange.launch.py` |
+| **Launch File** | `ardupilot_sitl.launch.py` | `pixhawk6c.launch.py` |
 | **Package** | `simtofly_mavros_sitl` | `simtofly_mavros_real` |
 | **Start Script** | `./start_mavros.sh` | `./start_mavros_real.sh` |
 | **Mission Scripts** | ✅ Same scripts work! | ✅ Same scripts work! |
@@ -523,7 +523,7 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 │   │       └── ardupilot_sitl.launch.py
 │   └── simtofly_mavros_real/          # Real hardware config
 │       └── launch/
-│           └── cube_orange.launch.py
+│           └── pixhawk6c.launch.py
 ├── scripts/
 │   └── missions/
 │       ├── mission_simple.py        # Works for both SITL and real!

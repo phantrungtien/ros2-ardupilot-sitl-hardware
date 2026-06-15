@@ -184,17 +184,14 @@ This framework has been validated on the following configuration:
 
 ### **Primary Test Platform: FuryVision AAV**
 
-**Flight Controller:** Cube Orange+ (Pixhawk)  
+**Flight Controller:** Pixhawk 6C 
 **Companion Computer:** Raspberry Pi 4 (8GB)  
 **Firmware:** ArduCopter v4.5.7  
 **ROS2 Version:** Humble Hawksbill  
 **OS:** Ubuntu 22.04 LTS
 
-![FuryVision AAV in Flight](https://github.com/sidharthmohannair/Fury-Drone-Project/raw/main/versions/2_furyvision_aav/media/furryVision_fly.gif)
 
-*FuryVision AAV hovering - Hardware platform used for framework testing*
 
-**Complete Hardware Details:** [FuryVision AAV - Open Source Drone](https://github.com/sidharthmohannair/Fury-Drone-Project/tree/main/versions/2_furyvision_aav)
 
 **Why This Platform:**
 - ✅ **Fully open source** - CAD files, assembly guide, wiring diagrams available
@@ -260,19 +257,10 @@ Planned improvements based on feedback:
 - Multi-drone coordination examples
 - Video tutorials
 
-**Your suggestions welcome in [Discussions](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/discussions)!**
 
 ---
 
 ## License
-
-This project is licensed under the Apache License 2.0 - see [LICENSE](LICENSE) file.
-
-**When using this work, please credit:**
-```
-Based on work by Sidharth Mohan Nair
-https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
-```
 
 ---
 
@@ -284,11 +272,7 @@ https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
 
 ---
 
-## Support
 
-- **Issues:** [GitHub Issues](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/discussions)
-- **Author:** [Sidharth Mohan Nair](https://github.com/sidharthmohannair)
 
 ---
 

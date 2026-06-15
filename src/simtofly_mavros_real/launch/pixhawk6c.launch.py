@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-MAVROS Launch File for Real Hardware (Cube Orange)
----------------------------------------------------
+MAVROS Launch File for Real Hardware (Pixhawk via TELEM3)
+----------------------------------------------------------
 Author: Sidharth Mohan Nair
 GitHub: https://github.com/sidharthmohannair
 
-Connection: USB Serial to Cube Orange
-Device: /dev/ttyACM0 (or /dev/cube_orange if udev rule set)
+Connection: TELEM3 (SERIAL4) -> TX/RX/GND GPIO pins on companion computer
+Device: /dev/ttyAMA0
 Baud: 921600
 """
 
@@ -18,20 +18,21 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     """
-    Launch MAVROS node configured for Cube Orange via USB serial.
+    Launch MAVROS node configured for Pixhawk via TELEM3 GPIO UART.
 
     Prerequisites:
-    1. Cube Orange SERIAL0_PROTOCOL = 2 (MAVLink2)
-    2. Cube Orange SERIAL0_BAUD = 921600
-    3. USB cable connected: Cube Orange -> Raspberry Pi
-    4. User in dialout group: sudo usermod -a -G dialout $USER
+    1. Pixhawk SERIAL4_PROTOCOL = 2 (MAVLink2)
+    2. Pixhawk SERIAL4_BAUD = 921600
+    3. Wiring: TELEM3 TX -> RPi RX (GPIO15), TELEM3 RX -> RPi TX (GPIO14), GND -> GND
+    4. RPi UART enabled: enable_uart=1 and dtoverlay=disable-bt in /boot/config.txt
+    5. User in dialout group: sudo usermod -a -G dialout $USER
     """
 
     return LaunchDescription([
         # Declare launch arguments
         DeclareLaunchArgument(
             'fcu_url',
-            default_value='/dev/ttyACM0:921600',
+            default_value='/dev/ttyAMA0:921600',
             description='FCU serial device and baud rate'
         ),
 

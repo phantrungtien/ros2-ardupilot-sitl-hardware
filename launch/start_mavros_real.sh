@@ -23,8 +23,8 @@ then
 fi
 
 echo ""
-echo "Connection: USB Serial to Cube Orange"
-echo "Device: /dev/ttyACM0:921600"
+echo "Connection: TELEM3 GPIO UART to Pixhawk"
+echo "Device: /dev/ttyAMA0:921600"
 echo ""
 
 # Ask for Mission Planner IP
@@ -60,7 +60,7 @@ source /opt/ros/humble/setup.bash
 
 # Start MAVROS with direct command (more reliable than launch file)
 ros2 run mavros mavros_node --ros-args \
-    -p fcu_url:="/dev/ttyACM0:921600" \
+    -p fcu_url:="/dev/ttyAMA0:921600" \
     -p target_system_id:=1 \
     -p target_component_id:=1 \
     $GCS_PARAM

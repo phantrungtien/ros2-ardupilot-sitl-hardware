@@ -244,17 +244,6 @@ ros2 service call /mavros/set_mode mavros_msgs/srv/SetMode "{custom_mode: 'RTL'}
 
 ---
 
-## Project Repository
-
-**Author:** Sidharth Mohan Nair
-**GitHub:** https://github.com/sidharthmohannair
-
----
-
-## License
-
-This project is open source. Feel free to modify and use for your projects.
-
 ---
 
 Happy Flying! 🚁

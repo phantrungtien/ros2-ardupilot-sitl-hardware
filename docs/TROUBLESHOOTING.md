@@ -195,7 +195,7 @@ SERIAL0_PROTOCOL = 2       # MAVLink2
 SERIAL0_BAUD = 921600      # Baud rate
 
 # Match in launch file
-cat src/simtofly_mavros_real/launch/cube_orange.launch.py
+cat src/simtofly_mavros_real/launch/pixhawk6c.launch.py
 # Should show: /dev/ttyACM0:921600
 ```
 
