@@ -113,6 +113,48 @@ python3 scripts/missions/mission_simple.py
 
 ---
 
+### Fly a Circle (velocity control)
+
+`mission_circle` flies N circles by streaming **velocity + tangent yaw**
+setpoints (not position waypoints). It uses a geometric controller: a
+constant-speed tangent feedforward computed at the drone's *actual* angular
+position, plus a radial P-term that holds it on the circle. Laps are counted
+from the real swept angle, not a timer.
+
+```bash
+# All-in-one: Gazebo + SITL + MAVROS + mission, each in its own window,
+# ordered by readiness (not timers).
+colcon build --packages-select simtofly_mavros_sitl
+source install/setup.bash
+ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_circle
+```
+
+Tune the run at the top of
+`src/simtofly_mavros_sitl/simtofly_mavros_sitl/mission_circle.py`:
+
+| Param | Default | Meaning |
+|-------|--------:|---------|
+| `radius` | 5.0 m | circle radius R |
+| `speed` | 2.0 m/s | tangential speed V (→ ω = V/R) |
+| `direction` | +1 | +1 = CCW, −1 = CW |
+| `altitude` | 10.0 m | altitude held during the circle |
+| `laps` | 2 | full circles before RTL |
+| `kp_r` | 0.8 | radial stiffness — raise to tighten the radius |
+
+**Physical limit:** centripetal accel `a = V²/R`, bank angle `φ ≈ atan(a/g)`.
+Defaults give `a = 0.8 m/s²`, `φ ≈ 4.7°` (gentle). Raising `V` or lowering `R`
+grows the bank angle fast — keep it flyable.
+
+> **SITL-verified:** clean circle, correct direction, altitude held, nose
+> tangent, stops at exactly N laps then RTL. The *real* radius settles ~10–12%
+> wider than R at the default `kp_r` (velocity-loop lag an ideal-tracking model
+> doesn't show); raise `kp_r` if you need it tighter.
+
+The pure controller geometry lives in `circle_control.py` and is unit-tested
+(`test/test_circle_control.py`), independent of ROS.
+
+---
+
 ### Deploy to Real Hardware
 
 **After SITL testing succeeds:**

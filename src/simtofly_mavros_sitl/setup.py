@@ -30,6 +30,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'mission_simple = simtofly_mavros_sitl.mission_simple:main',
+            'trackinghuman = simtofly_mavros_sitl.trackinghuman:main',
+            'verify_frame = simtofly_mavros_sitl.verify_frame:main',
+            'mission_circle = simtofly_mavros_sitl.mission_circle:main',
         ],
     },
 )

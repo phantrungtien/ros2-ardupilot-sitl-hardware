@@ -35,6 +35,32 @@ python3 scripts/missions/mission_simple.py
 
 ---
 
+### `mission_circle.py` - Circular Trajectory (velocity control) ⭕
+
+Flies **N circles using velocity setpoints** (`/mavros/setpoint_raw/local`),
+not position waypoints. Geometric controller: constant-speed tangent
+feedforward at the drone's actual angular position + a radial P-term to hold
+the circle; laps counted from the real swept angle; nose kept tangent.
+
+**How to run (all-in-one launch):**
+```bash
+colcon build --packages-select simtofly_mavros_sitl
+source install/setup.bash
+ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_circle
+```
+
+> Note: `mission_circle` lives in the **`simtofly_mavros_sitl` package**
+> (run via `ros2 run` / launch, not `python3 scripts/...`). The pure
+> controller geometry is in `simtofly_mavros_sitl/circle_control.py` and is
+> unit-tested in `test/test_circle_control.py`.
+
+Tunables (`radius`, `speed`, `direction`, `laps`, `kp_r`, ...) sit at the top
+of `mission_circle.py`. See the main
+[README](../../README.md#fly-a-circle-velocity-control) for the full parameter
+table and the bank-angle limit `φ ≈ atan(V²/Rg)`.
+
+---
+
 ## Prerequisites
 
 Before running any script, you need:
