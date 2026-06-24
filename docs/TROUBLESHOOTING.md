@@ -122,8 +122,8 @@ sim_vehicle.py -v ArduCopter --map --console
 cat src/simtofly_mavros_sitl/launch/ardupilot_sitl.launch.py
 # Should show: fcu_url='udp://:14550@'
 
-# For real hardware, check serial connection
-ls -l /dev/ttyACM0
+# For real hardware, check serial UART connection
+ls -l /dev/ttyAMA0
 # Should show: crw-rw---- 1 root dialout
 ```
 
@@ -131,11 +131,11 @@ ls -l /dev/ttyACM0
 
 ## Real Hardware Issues
 
-### Permission denied: /dev/ttyACM0
+### Permission denied: /dev/ttyAMA0
 
 **Symptoms:**
 ```
-Failed to open /dev/ttyACM0: Permission denied
+Failed to open /dev/ttyAMA0: Permission denied
 ```
 
 **Solution:**
@@ -157,27 +157,36 @@ groups
 
 **Symptoms:**
 ```
-/dev/ttyACM0: No such file or directory
+/dev/ttyAMA0: No such file or directory
 ```
 
 **Solutions:**
 
-1. **Check USB connection:**
+The GPIO UART is a built-in device — it appears once enabled, not when you
+plug something in (no USB hot-plug event).
+
+1. **Enable the UART in the boot config (Raspberry Pi example):**
    ```bash
-   # Plug in flight controller
-   dmesg | tail -20
-   # Should show: ttyACM0: USB ACM device
+   sudo nano /boot/firmware/config.txt   # older images: /boot/config.txt
+   # Ensure these lines exist:
+   #   enable_uart=1
+   #   dtoverlay=disable-bt
+   sudo reboot
    ```
 
-2. **List USB devices:**
+2. **Free the UART from the serial login console:**
    ```bash
-   ls /dev/tty* | grep -E "ACM|USB"
-   # Device might be ttyACM1 or ttyUSB0
+   sudo raspi-config   # Interface Options -> Serial Port:
+                       #   login shell over serial = NO, hardware enabled = YES
+   sudo systemctl disable hciuart
+   sudo reboot
    ```
 
-3. **Try different USB cable:**
-   - Some cables are power-only
-   - Use a data cable
+3. **List serial devices to confirm:**
+   ```bash
+   ls -l /dev/ttyAMA0
+   # On a Jetson the UART is /dev/ttyTHS1 instead
+   ```
 
 ---
 
@@ -190,13 +199,13 @@ Connected but no data from FCU
 
 **Solution:**
 ```bash
-# Check Cube Orange parameters (use Mission Planner):
-SERIAL0_PROTOCOL = 2       # MAVLink2
-SERIAL0_BAUD = 921600      # Baud rate
+# Check Pixhawk 6C parameters (use Mission Planner), TELEM3 = SERIAL4:
+SERIAL4_PROTOCOL = 2       # MAVLink2
+SERIAL4_BAUD = 921600      # Baud rate
 
 # Match in launch file
 cat src/simtofly_mavros_real/launch/pixhawk6c.launch.py
-# Should show: /dev/ttyACM0:921600
+# Should show: /dev/ttyAMA0:921600
 ```
 
 ---
@@ -285,7 +294,7 @@ No Heartbeat Packets Received
 
 1. **Check both devices on same network:**
    ```bash
-   # On Raspberry Pi:
+   # On the companion computer:
    ip addr show wlan0
    
    # On laptop:
@@ -297,10 +306,10 @@ No Heartbeat Packets Received
 
 2. **Test ping:**
    ```bash
-   # From RPi to laptop:
+   # From companion computer to laptop:
    ping 10.73.2.236
    
-   # From laptop to RPi:
+   # From laptop to companion computer:
    ping 10.73.2.222
    ```
 

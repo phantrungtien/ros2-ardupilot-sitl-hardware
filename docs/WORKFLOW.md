@@ -7,12 +7,12 @@
 
 ## Overview
 
-This framework supports **both simulation and real hardware** on the **same Raspberry Pi**:
+This framework supports **both simulation and real hardware** on the **same companion computer**:
 
 1. **SITL Mode** - Test missions in software simulation (no drone needed)
 2. **Hardware Mode** - Deploy same missions on real drone
 
-**Key advantage:** Develop and test on Raspberry Pi in SITL, then switch to hardware without changing code!
+**Key advantage:** Develop and test on the companion computer in SITL, then switch to hardware without changing code!
 
 ---
 
@@ -32,7 +32,7 @@ This framework supports **both simulation and real hardware** on the **same Rasp
 
 | Script | Purpose |
 |--------|---------|
-| `./launch/start_mavros_real.sh` | Connect MAVROS to Cube Orange (Serial) |
+| `./launch/start_mavros_real.sh` | Connect MAVROS to Pixhawk 6C (TELEM3 UART) |
 
 **Note:** Use `Ctrl+C` to stop real hardware MAVROS.
 
@@ -42,7 +42,7 @@ This framework supports **both simulation and real hardware** on the **same Rasp
 
 ### Prerequisites
 
-- ✅ Raspberry Pi with this repository installed
+- ✅ Companion computer with this repository installed
 - ✅ ArduPilot SITL installed
 - ✅ ROS2 Humble + MAVROS installed
 
@@ -100,9 +100,9 @@ cd ~/ros2-ardupilot-sitl-hardware
 
 - ✅ SITL testing completed successfully
 - ✅ Mission works in simulation
-- ✅ Cube Orange connected via USB to Raspberry Pi
+- ✅ Pixhawk 6C wired to the companion computer (TELEM3 UART)
 - ✅ **Propellers REMOVED** (bench testing)
-- ✅ Battery connected, Cube Orange powered
+- ✅ Battery connected, Pixhawk 6C powered
 - ✅ RC transmitter ON
 
 ### Step-by-Step
@@ -112,10 +112,10 @@ cd ~/ros2-ardupilot-sitl-hardware
 ./launch/stop_all.sh
 ```
 
-**Verify Cube Orange detected:**
+**Verify the UART device exists:**
 ```bash
-ls -l /dev/ttyACM0
-# Should show device
+ls -l /dev/ttyAMA0
+# Should show device (crw-rw---- root dialout)
 ```
 
 ---
@@ -237,8 +237,8 @@ ps aux | grep -E "sim_vehicle|mavros_node"
 **Solution:**
 ```bash
 ./launch/stop_all.sh
-# Ensure /dev/ttyACM0 exists
-ls -l /dev/ttyACM0
+# Ensure /dev/ttyAMA0 exists
+ls -l /dev/ttyAMA0
 ./launch/start_mavros_real.sh
 ```
 
@@ -278,7 +278,7 @@ ls -l /dev/ttyACM0
 
 1. ✅ **Always remove propellers** for bench testing
 2. ✅ Stop SITL completely first
-3. ✅ Verify USB connection (`ls /dev/ttyACM0`)
+3. ✅ Verify UART device (`ls /dev/ttyAMA0`)
 4. ✅ Check battery voltage sufficient
 5. ✅ Have RC transmitter ready for override
 6. ✅ Start with simple missions
@@ -319,7 +319,7 @@ The mission scripts work identically in SITL and hardware because:
 
 ✅ **Connection abstracted:**
 - SITL: UDP connection (`udp://:14550@`)
-- Hardware: Serial connection (`/dev/ttyACM0:921600`)
+- Hardware: Serial UART connection (`/dev/ttyAMA0:921600`)
 - Mission code doesn't care!
 
 ### No Code Changes Needed

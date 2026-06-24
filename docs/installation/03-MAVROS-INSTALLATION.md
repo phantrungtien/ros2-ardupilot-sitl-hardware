@@ -92,9 +92,9 @@ mavros_msgs
 
 MAVROS uses URL format to connect to flight controllers:
 
-**Serial (Real Hardware):**
+**Serial (Real Hardware — Pixhawk 6C TELEM3/SERIAL4 GPIO UART):**
 ```
-/dev/ttyACM0:921600
+/dev/ttyAMA0:921600
 ```
 
 **UDP (SITL Simulation):**

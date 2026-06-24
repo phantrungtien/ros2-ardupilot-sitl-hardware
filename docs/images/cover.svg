@@ -59,10 +59,10 @@
           text-anchor="middle" fill="#3b82f6">H</text>
     <text x="140" y="110" font-family="Arial, sans-serif" font-size="20" font-weight="bold" 
           text-anchor="middle" fill="#ffffff">Hardware</text>
-    <text x="140" y="140" font-family="Arial, sans-serif" font-size="16" 
-          text-anchor="middle" fill="#cbd5e1">Cube Orange</text>
-    <text x="140" y="165" font-family="Arial, sans-serif" font-size="16" 
-          text-anchor="middle" fill="#cbd5e1">Raspberry Pi</text>
+    <text x="140" y="140" font-family="Arial, sans-serif" font-size="16"
+          text-anchor="middle" fill="#cbd5e1">Pixhawk 6C</text>
+    <text x="140" y="165" font-family="Arial, sans-serif" font-size="16"
+          text-anchor="middle" fill="#cbd5e1">Companion Computer</text>
   </g>
   
   <!-- Box 3: Tested -->

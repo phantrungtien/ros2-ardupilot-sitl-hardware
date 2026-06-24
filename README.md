@@ -10,7 +10,7 @@
 
 
 
-Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial link) and a Raspberry Pi 4 companion computer.
+Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial link) and a companion computer (Raspberry Pi 4).
 
 ---
 
@@ -61,7 +61,7 @@ Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial lin
 
 ## Key Features
 
-- **Companion Computer Control** - Command drone autonomously from Raspberry Pi in GUIDED mode
+- **Companion Computer Control** - Command drone autonomously from a companion computer in GUIDED mode
 - **SITL & Hardware Testing** - Test missions in simulation, then deploy same code to real drone
 - **Flight Validated** - Tested in autonomous GUIDED flight on real hardware (Pixhawk 6C)
 - **Safety First** - Comprehensive pre-flight checks and emergency procedures
@@ -177,8 +177,8 @@ The pure controller geometry lives in `circle_control.py` and is unit-tested
 # 1. Stop SITL completely
 ./launch/stop_all.sh
 
-# 2. Wire the Pixhawk 6C to the Raspberry Pi:
-#    TELEM3 (SERIAL4) UART -> RPi GPIO UART (/dev/ttyAMA0 @ 921600)
+# 2. Wire the Pixhawk 6C to the companion computer:
+#    TELEM3 (SERIAL4) UART -> companion GPIO UART (/dev/ttyAMA0 @ 921600)
 
 # 3. Start MAVROS for hardware (Terminal 1)
 ./launch/start_mavros_real.sh
@@ -235,7 +235,7 @@ See **[WORKFLOW.md](docs/WORKFLOW.md)** for:
 
 ### Hardware Deployment  
 - **[Complete Workflow](docs/WORKFLOW.md)** - SITL → Bench → Flight testing progression
-- **[Real Hardware Setup](docs/guides/REAL_HARDWARE_SETUP.md)** - Deploy on Raspberry Pi + Flight Controller
+- **[Real Hardware Setup](docs/guides/REAL_HARDWARE_SETUP.md)** - Deploy on a companion computer + Flight Controller
 - **[Mission Planner Connection](docs/guides/MISSION_PLANNER_SETUP.md)** - Ground station monitoring (optional)
 
 ### Reference
@@ -253,7 +253,7 @@ This framework has been validated on the following configuration:
 | Component | Detail |
 |-----------|--------|
 | **Flight Controller** | Pixhawk 6C |
-| **Connection** | TELEM3 (SERIAL4) UART → RPi, `/dev/ttyAMA0` @ 921600 |
+| **Connection** | TELEM3 (SERIAL4) UART → companion computer, `/dev/ttyAMA0` @ 921600 |
 | **Companion Computer** | Raspberry Pi 4 (8GB) |
 | **Firmware** | ArduCopter v4.5.7 |
 | **ROS2 Version** | Humble Hawksbill |

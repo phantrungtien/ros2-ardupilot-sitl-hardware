@@ -3,16 +3,16 @@
 **Author:** phantrungtien
 **GitHub:** https://github.com/phantrungtien
 
-Guide to connect Mission Planner on your laptop to MAVROS running on Raspberry Pi.
+Guide to connect Mission Planner on your laptop to MAVROS running on the companion computer.
 
 ---
 
 ## Network Setup
 
-> **Note:** The IP addresses below are examples from our test setup. Replace them with your own network IPs. To find your IP, run `ip addr show wlan0` on Raspberry Pi or `ipconfig` on Windows.
+> **Note:** The IP addresses below are examples from our test setup. Replace them with your own network IPs. To find your IP, run `ip addr show wlan0` on the companion computer or `ipconfig` on Windows.
 
 **Example Network Configuration:**
-- **Raspberry Pi IP:** 10.73.2.222 *(replace with your RPi IP)*
+- **Companion computer IP:** 10.73.2.222 *(replace with your companion computer IP)*
 - **Laptop IP:** 10.73.2.236 *(replace with your laptop IP)*
 - **Network:** Same WiFi network
 - **Protocol:** UDP on port 14550
@@ -21,7 +21,7 @@ Guide to connect Mission Planner on your laptop to MAVROS running on Raspberry P
 
 ## STEP 1: Start MAVROS with GCS Forwarding
 
-On **Raspberry Pi**, run:
+On the **companion computer**, run:
 
 ```bash
 cd ~/ros2-ardupilot-sitl-hardware
@@ -76,7 +76,7 @@ If dropdown doesn't work:
 
 1. In Mission Planner, go to: **INITIAL SETUP → Optional Hardware → Antenna Tracker**
 2. Connection Type: **UDP Client**
-3. Remote Host: **10.73.2.222** (Raspberry Pi IP)
+3. Remote Host: **10.73.2.222** (companion computer IP)
 4. Remote Port: **14550**
 5. Click **Connect**
 
@@ -113,7 +113,7 @@ Once connected, you should see:
 
 1. **Check both devices on same network:**
    ```bash
-   # On RPi:
+   # On the companion computer:
    ip addr show wlan0 | grep "inet "
 
    # On Laptop (Windows Command Prompt):
@@ -121,9 +121,9 @@ Once connected, you should see:
    ```
    Both should be on `10.73.2.x` network
 
-2. **Verify MAVROS is running on RPi:**
+2. **Verify MAVROS is running on the companion computer:**
    ```bash
-   # On RPi:
+   # On the companion computer:
    ros2 topic list | grep mavros
    ```
    Should show many topics
@@ -134,10 +134,10 @@ Once connected, you should see:
 
 4. **Ping test:**
    ```bash
-   # On RPi, ping laptop:
+   # On the companion computer, ping laptop:
    ping 10.73.2.236
 
-   # On Laptop (Command Prompt), ping RPi:
+   # On Laptop (Command Prompt), ping the companion computer:
    ping 10.73.2.222
    ```
 
@@ -148,9 +148,9 @@ Once connected, you should see:
 **Problem:** Connected but no data
 
 **Solution:**
-- Restart MAVROS on RPi
-- Check Cube Orange is powered and connected
-- Verify USB cable is connected (Cube Orange → RPi)
+- Restart MAVROS on the companion computer
+- Check the Pixhawk 6C is powered and connected
+- Verify TELEM3 UART wiring (Pixhawk 6C → companion computer)
 
 ---
 
@@ -160,7 +160,7 @@ Once connected, you should see:
 
 **Solution:**
 - Disconnect Mission Planner
-- Restart MAVROS on RPi
+- Restart MAVROS on the companion computer
 - Reconnect Mission Planner
 
 ---
@@ -170,7 +170,7 @@ Once connected, you should see:
 ### Current Setup:
 
 ```
-Laptop (Mission Planner)          Raspberry Pi (MAVROS)
+Laptop (Mission Planner)          Companion computer (MAVROS)
 10.73.2.236                       10.73.2.222
      |                                  |
      └─────── UDP Port 14550 ───────────┘
@@ -182,9 +182,9 @@ Laptop (Mission Planner)          Raspberry Pi (MAVROS)
 ### Data Flow:
 
 ```
-Cube Orange (USB)
+Pixhawk 6C (TELEM3 UART)
     ↓ MAVLink
-Raspberry Pi (MAVROS)
+Companion computer (MAVROS)
     ↓ UDP:14550
 Laptop (Mission Planner)
 ```
@@ -199,7 +199,7 @@ If you want to run MAVROS manually with GCS URL:
 source /opt/ros/humble/setup.bash
 
 ros2 run mavros mavros_node --ros-args \
-    -p fcu_url:="/dev/ttyACM0:921600" \
+    -p fcu_url:="/dev/ttyAMA0:921600" \
     -p gcs_url:="udp://@10.73.2.236:14550" \
     -p target_system_id:=1 \
     -p target_component_id:=1
@@ -244,9 +244,9 @@ nano ~/ros2-ardupilot-sitl-hardware/launch/start_mavros_real.sh
 
 ---
 
-## Static IP for Raspberry Pi (Future Setup)
+## Static IP for the Companion Computer (Future Setup)
 
-To make RPi always have same IP (10.73.2.222):
+To make the companion computer always have the same IP (10.73.2.222):
 
 **Edit netplan config:**
 ```bash
@@ -283,7 +283,7 @@ You can send telemetry to multiple laptops:
 
 ```bash
 ros2 run mavros mavros_node --ros-args \
-    -p fcu_url:="/dev/ttyACM0:921600" \
+    -p fcu_url:="/dev/ttyAMA0:921600" \
     -p gcs_url:="udp://@10.73.2.236:14550,udp://@10.73.2.240:14550" \
     -p target_system_id:=1 \
     -p target_component_id:=1
@@ -297,9 +297,9 @@ Each laptop can run Mission Planner/QGC on port 14550.
 
 **Before connecting Mission Planner:**
 
-- [ ] Cube Orange powered and connected to RPi via USB
-- [ ] RPi and Laptop on same WiFi network
-- [ ] MAVROS running on RPi with GCS URL set
+- [ ] Pixhawk 6C powered and wired to the companion computer (TELEM3 UART)
+- [ ] Companion computer and Laptop on same WiFi network
+- [ ] MAVROS running on the companion computer with GCS URL set
 - [ ] Mission Planner configured for UDP port 14550
 - [ ] No firewall blocking UDP 14550
 

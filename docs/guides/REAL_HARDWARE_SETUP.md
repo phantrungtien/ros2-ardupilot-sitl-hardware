@@ -1,4 +1,4 @@
-# Real Hardware Setup Guide - Cube Orange + Raspberry Pi
+# Real Hardware Setup Guide - Pixhawk 6C + Companion Computer
 
 **Author:** phantrungtien
 **GitHub:** https://github.com/phantrungtien
@@ -26,94 +26,137 @@ Complete guide to configure and test your real drone with ROS2 MAVROS.
 
 ### Equipment Needed
 
-- **Flight Controller:** Cube Orange (or compatible Pixhawk)
-- **Companion Computer:** Raspberry Pi (already configured with ROS2 Humble)
-- **Connection:** USB cable (Cube Orange USB port → RPi USB port)
-- **Power:** Battery or power module for Cube Orange
+- **Flight Controller:** Pixhawk 6C (or compatible Pixhawk/Cube)
+- **Companion Computer:** any embedded Linux board with ROS2 Humble (validated on Raspberry Pi 4; Jetson works with adjusted port names)
+- **Connection:** TELEM3 (SERIAL4) UART ↔ companion computer GPIO UART (TX/RX/GND)
+- **Power:** Battery or power module for the Pixhawk 6C
 - **RC Transmitter:** Powered ON with good signal
 - **Laptop:** For initial parameter configuration (Mission Planner/QGC)
 
+> **Why a serial UART link, not USB?** This setup connects the Pixhawk's
+> **TELEM3 (SERIAL4)** port to the companion computer's GPIO UART
+> (`/dev/ttyAMA0`), freeing the USB port and matching the flight wiring. If you
+> prefer USB (`/dev/ttyACM0`) for bench work, change `fcu_url` accordingly and
+> configure `SERIAL0_*` instead of `SERIAL4_*`.
+
 ---
 
-## STEP 1: Configure Cube Orange Parameters
+## STEP 1: Configure Pixhawk 6C Parameters
 
 ### Connect to Mission Planner or QGroundControl
 
 **Using Mission Planner:**
 
-1. Connect Cube Orange to laptop via USB
+1. Connect Pixhawk 6C to laptop via USB
 2. Open Mission Planner → Connect
 3. Go to `CONFIG/TUNING` → `Full Parameter List`
-4. Set these parameters:
+4. Set these parameters (TELEM3 = SERIAL4):
 
 ```
-SERIAL0_PROTOCOL = 2        (MAVLink2 on USB)
-SERIAL0_BAUD = 921600       (921600 baud rate)
+SERIAL4_PROTOCOL = 2        (MAVLink2 on TELEM3)
+SERIAL4_BAUD = 921600       (921600 baud rate)
 ```
 
 5. Click **"Write Params"**
-6. **Reboot** Cube Orange
+6. **Reboot** the Pixhawk 6C
 7. Reconnect and verify parameters saved
 
 **Using QGroundControl:**
 
 1. Connect vehicle via USB
 2. Go to `Vehicle Setup` → `Parameters`
-3. Search `SERIAL0_PROTOCOL` → Set to `2`
-4. Search `SERIAL0_BAUD` → Set to `921600`
+3. Search `SERIAL4_PROTOCOL` → Set to `2`
+4. Search `SERIAL4_BAUD` → Set to `921600`
 5. **Reboot** vehicle
 6. Verify settings saved
 
 ### Why These Settings?
 
-- `SERIAL0_PROTOCOL = 2`: Enables MAVLink v2 on USB port
-- `SERIAL0_BAUD = 921600`: High-speed communication (921.6 kbps)
-- Without these, USB port won't output proper MAVLink data
+- `SERIAL4_PROTOCOL = 2`: Enables MAVLink v2 on the TELEM3 port
+- `SERIAL4_BAUD = 921600`: High-speed communication (921.6 kbps)
+- Without these, TELEM3 won't output proper MAVLink data
+
+> **Note on baud:** `921600` over GPIO UART works on short, clean wiring. If you
+> see dropped/garbled data on a long or noisy link, drop both sides to `57600`
+> (`SERIAL4_BAUD = 57600` and `/dev/ttyAMA0:57600`).
 
 ---
 
-## STEP 2: Setup USB Connection on Raspberry Pi
+## STEP 2: Wire and Enable the GPIO UART on the Companion Computer
 
-### Physical Connection
+### Physical Connection (TELEM3 ↔ GPIO UART)
 
-1. **Power ON** Cube Orange (connect battery or power module)
-2. **Connect USB cable:** Cube Orange USB → Raspberry Pi USB port
-3. Wait for Cube Orange to boot (LEDs, beeps)
+Wire three lines between the Pixhawk TELEM3 connector and the companion
+computer's UART pins (cross TX↔RX):
 
-### Verify Device Appears
+| Pixhawk TELEM3 | → | Companion computer UART |
+|----------------|---|--------------------------|
+| TX             | → | RX                       |
+| RX             | → | TX                       |
+| GND            | → | GND                      |
+
+> **Raspberry Pi pinout (example):** TELEM3 TX → RPi RX (GPIO15, pin 10),
+> TELEM3 RX → RPi TX (GPIO14, pin 8), GND → GND. **Do NOT connect the 5V line.**
+> On a Jetson the UART pins and device name differ (see the note in STEP 3).
+
+1. **Power ON** the Pixhawk 6C (connect battery or power module)
+2. **Connect the three UART wires** as above
+3. Wait for the Pixhawk to boot (LEDs, beeps)
+
+### Enable the UART (Raspberry Pi example)
+
+The Raspberry Pi's primary GPIO UART (`/dev/ttyAMA0`) is used by Bluetooth and
+the serial console by default — both must be freed:
 
 ```bash
-# List serial devices
-ls -l /dev/tty* | grep -E "ACM|USB"
-
-# Should see one of:
-# /dev/ttyACM0  (most common for Cube Orange)
-# /dev/ttyUSB0  (if using USB-serial adapter)
+# Edit boot config
+sudo nano /boot/firmware/config.txt   # (older images: /boot/config.txt)
 ```
 
-**Check kernel messages:**
+Add / ensure these lines:
+
+```
+enable_uart=1
+dtoverlay=disable-bt
+```
+
+Then disable the serial login console so MAVROS owns the port:
 
 ```bash
-dmesg | tail -20
+sudo raspi-config        # Interface Options → Serial Port:
+                         #   login shell over serial = NO
+                         #   serial hardware enabled = YES
+sudo systemctl disable hciuart      # release UART from Bluetooth
+sudo reboot
 ```
 
-**Expected output:**
-```
-[  123.456] usb 1-1: new full-speed USB device
-[  123.567] cdc_acm 1-1:1.0: ttyACM0: USB ACM device
+> **Other companion computers:** the device name and enable procedure differ —
+> e.g. a Jetson exposes its UART as `/dev/ttyTHS1` (configured via its own
+> pinmux/jetson-io tools), not `/dev/ttyAMA0`. Use that device in every command
+> below.
+
+---
+
+### Verify the UART Device Exists
+
+Unlike a USB FCU, the GPIO UART is a built-in device — it is always present once
+enabled (no hot-plug, no `dmesg` USB event):
+
+```bash
+ls -l /dev/ttyAMA0
+# Expected: crw-rw---- 1 root dialout ... /dev/ttyAMA0
 ```
 
-**If device doesn't appear:**
-- Try different USB cable (some are power-only)
-- Try different USB port on RPi
-- Verify Cube Orange is powered and booted
-- Check USB port on Cube Orange is clean
+**If the device is missing or still owned by Bluetooth:**
+- Re-check `enable_uart=1` and `dtoverlay=disable-bt` in the boot config
+- Confirm the serial login console is disabled
+- Reboot and check again
 
 ---
 
 ### Set Proper Permissions
 
-Serial ports require proper permissions:
+Serial ports require the user to be in the `dialout` group:
 
 ```bash
 # Add user to dialout group
@@ -122,7 +165,7 @@ sudo usermod -a -G dialout $USER
 # Verify addition
 groups
 
-# ⚠️ MUST REBOOT for changes to take effect
+# ⚠️ MUST REBOOT (or re-login) for changes to take effect
 sudo reboot
 ```
 
@@ -134,36 +177,12 @@ groups
 # Should show: ... dialout ...
 
 # Check device permissions
-ls -l /dev/ttyACM0
-# Output: crw-rw---- 1 root dialout ... /dev/ttyACM0
+ls -l /dev/ttyAMA0
+# Output: crw-rw---- 1 root dialout ... /dev/ttyAMA0
 ```
 
----
-
-### (Optional) Create Persistent Device Name
-
-If `/dev/ttyACM0` changes to `/dev/ttyACM1` etc. on reboot, create a udev rule:
-
-```bash
-# Find USB device ID
-lsusb
-
-# Create udev rule
-sudo nano /etc/udev/rules.d/99-cube-orange.rules
-```
-
-**Add this line (replace VID:PID with your values):**
-```
-SUBSYSTEM=="tty", ATTRS{idVendor}=="26ac", ATTRS{idProduct}=="0032", SYMLINK+="cube_orange", MODE="0666"
-```
-
-**Reload rules:**
-```bash
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
-
-Now you can use `/dev/cube_orange` instead of `/dev/ttyACM0`!
+> **No udev rule needed:** the GPIO UART has a fixed name (`/dev/ttyAMA0`), so it
+> never renumbers across reboots the way a USB `/dev/ttyACM*` device can.
 
 ---
 
@@ -174,7 +193,7 @@ Now you can use `/dev/cube_orange` instead of `/dev/ttyACM0`!
 sudo apt install minicom -y
 
 # Open serial connection
-minicom -D /dev/ttyACM0 -b 921600
+minicom -D /dev/ttyAMA0 -b 921600
 ```
 
 **What you should see:**
@@ -184,13 +203,13 @@ minicom -D /dev/ttyACM0 -b 921600
 **Press Ctrl+A, then X to exit**
 
 ✅ **If you see data:** Serial connection works!
-❌ **If no data:** Check Cube Orange parameters and power
+❌ **If no data:** Check Pixhawk parameters (`SERIAL4_*`), wiring (TX↔RX crossed), and power
 
 ---
 
 ## STEP 3: Launch MAVROS for Real Hardware
 
-### Your New Package Structure
+### Your Package Structure
 
 ```
 ~/ros2-ardupilot-sitl-hardware/
@@ -226,6 +245,10 @@ source ~/ros2-ardupilot-sitl-hardware/install/setup.bash
 ros2 launch simtofly_mavros_real pixhawk6c.launch.py
 ```
 
+> Both default to `fcu_url:=/dev/ttyAMA0:921600`. On a different companion
+> computer, override it, e.g.
+> `ros2 launch simtofly_mavros_real pixhawk6c.launch.py fcu_url:=/dev/ttyTHS1:921600`.
+
 ---
 
 ### Success Indicators
@@ -233,7 +256,7 @@ ros2 launch simtofly_mavros_real pixhawk6c.launch.py
 **You should see:**
 
 ```
-[INFO] [mavros]: FCU URL: /dev/ttyACM0:921600
+[INFO] [mavros]: FCU URL: /dev/ttyAMA0:921600
 [INFO] [mavros]: Starting MAVROS...
 [INFO] [mavros]: CON: Got HEARTBEAT, connected. FCU: ArduPilot
 [INFO] [mavros]: FCU: ArduCopter V4.x.x
@@ -250,22 +273,23 @@ ros2 launch simtofly_mavros_real pixhawk6c.launch.py
 
 ### Troubleshooting Connection Issues
 
-**Error: `Failed to open /dev/ttyACM0`**
-- **Cause:** Permission denied
-- **Fix:** User not in dialout group, reboot required
+**Error: `Failed to open /dev/ttyAMA0`**
+- **Cause:** Permission denied, or UART still owned by Bluetooth/console
+- **Fix:** User not in dialout group (reboot required); confirm `dtoverlay=disable-bt` and serial console disabled
 
 **Error: `Connection timeout`**
-- **Cause:** No MAVLink data on serial port
-- **Fix:** Check Cube Orange `SERIAL0_PROTOCOL = 2`
+- **Cause:** No MAVLink data on the UART
+- **Fix:** Check Pixhawk `SERIAL4_PROTOCOL = 2` and that TX↔RX are crossed correctly
 
 **Error: `Device not found`**
-- **Cause:** USB cable not connected or bad cable
-- **Fix:** Check physical connection, try different cable
+- **Cause:** UART not enabled in the boot config
+- **Fix:** Set `enable_uart=1` + `dtoverlay=disable-bt`, reboot
 
 **No error but no HEARTBEAT:**
-- Check Cube Orange is powered ON
-- Check correct baud rate (921600)
-- Try rebooting Cube Orange
+- Check the Pixhawk 6C is powered ON
+- Check correct baud rate (921600 on both sides)
+- Verify GND is connected and TX/RX are not swapped
+- Try rebooting the Pixhawk 6C
 
 ---
 
@@ -325,7 +349,7 @@ Before proceeding:
 - [ ] Drone secured on bench
 - [ ] RC transmitter ON
 - [ ] Clear area around drone
-- [ ] Battery connected and Cube Orange powered
+- [ ] Battery connected and Pixhawk 6C powered
 - [ ] MAVROS running and connected
 
 ---
@@ -365,7 +389,7 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: true}"
 
 **Expected behavior:**
 - ⚠️ **Motors MAY start spinning** (this is why props are OFF!)
-- Cube Orange LEDs change (solid vs blinking)
+- Pixhawk 6C LEDs change (solid vs blinking)
 - RC transmitter may beep/alert
 
 **Disarm immediately:**
@@ -378,7 +402,7 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 - GPS lock (if outdoors)
 - Pre-arm checks in Mission Planner
 - RC transmitter failsafe settings
-- Cube Orange errors in MAVROS output
+- Pixhawk 6C errors in MAVROS output
 
 ---
 
@@ -391,13 +415,14 @@ Your mission scripts from SITL will work on real hardware!
 ```bash
 cd ~/ros2-ardupilot-sitl-hardware
 source /opt/ros/humble/setup.bash
-python3 scripts/missions/mission_simple.py
+source install/setup.bash
+ros2 run simtofly_mavros_sitl mission_simple
 ```
 
 **What should happen:**
 1. Script connects to MAVROS ✅
 2. Sets GUIDED mode ✅
-3. Arms vehicle ✅
+3. Arms vehicle (retries until prearm/EKF/GPS ready) ✅
 4. **Sends takeoff command** - motors will spin but won't takeoff (no props)
 5. Sends position commands
 6. RTL mode
@@ -413,7 +438,7 @@ python3 scripts/missions/mission_simple.py
 
 | Aspect | SITL | Real Hardware |
 |--------|------|---------------|
-| **Connection** | UDP (`udp://:14550@`) | Serial (`/dev/ttyACM0:921600`) |
+| **Connection** | UDP (`udp://:14550@`) | Serial UART (`/dev/ttyAMA0:921600`) |
 | **Launch File** | `ardupilot_sitl.launch.py` | `pixhawk6c.launch.py` |
 | **Package** | `simtofly_mavros_sitl` | `simtofly_mavros_real` |
 | **Start Script** | `./start_mavros.sh` | `./start_mavros_real.sh` |
@@ -496,14 +521,14 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 ## Troubleshooting Common Issues
 
 ### MAVROS won't start
-- Check device exists: `ls -l /dev/ttyACM0`
+- Check device exists: `ls -l /dev/ttyAMA0`
 - Check permissions: `groups` (should show dialout)
 - Reboot if just added to dialout group
 
 ### Connected but no topics updating
-- Check Cube Orange parameters (SERIAL0_PROTOCOL)
-- Verify baud rate matches (921600)
-- Check USB cable quality
+- Check Pixhawk parameters (`SERIAL4_PROTOCOL = 2`)
+- Verify baud rate matches (921600 on both sides)
+- Check wiring quality (TX↔RX crossed, common GND)
 
 ### Can't arm vehicle
 - Check GPS lock (outdoors)
@@ -543,9 +568,10 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 ## Summary Checklist
 
 **Before first connection:**
-- [ ] Cube Orange parameters set (`SERIAL0_PROTOCOL=2`, `SERIAL0_BAUD=921600`)
+- [ ] Pixhawk 6C parameters set (`SERIAL4_PROTOCOL=2`, `SERIAL4_BAUD=921600`)
+- [ ] TELEM3 ↔ companion UART wired (TX↔RX crossed, common GND)
+- [ ] Companion UART enabled + freed from Bluetooth/console
 - [ ] User added to dialout group + rebooted
-- [ ] USB cable connected
 - [ ] `simtofly_mavros_real` package built
 
 **Before each test:**
