@@ -1,7 +1,7 @@
 # Real Hardware Setup Guide - Cube Orange + Raspberry Pi
 
-**Author:** Sidharth Mohan Nair
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien
+**GitHub:** https://github.com/phantrungtien
 
 Complete guide to configure and test your real drone with ROS2 MAVROS.
 
@@ -569,7 +569,7 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 
 ---
 
-**Author:** Sidharth Mohan Nair
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien
+**GitHub:** https://github.com/phantrungtien
 
 **Stay safe and happy flying!** 🚁

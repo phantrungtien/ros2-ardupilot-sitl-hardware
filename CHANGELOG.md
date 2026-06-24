@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of ROS2-ArduPilot SITL & Hardware Integration Framework
 - `simtofly_mavros_sitl` package for ArduPilot SITL simulation
-- `simtofly_mavros_real` package for real hardware (Cube Orange, Pixhawk)
+- `simtofly_mavros_real` package for real hardware (Pixhawk 6C)
 - Complete mission script (`mission_simple.py`) for autonomous flight
 - Helper scripts for easy startup (`start_mavros.sh`, `start_mavros_real.sh`, `start_sitl.sh`)
 - Mission Planner/QGroundControl network integration
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - SITL Simulation Guide
   - Mission Planning Guide
 - Safety checks and procedures for hardware testing
-- Tested and validated on real hardware (Cube Orange + Raspberry Pi 4)
+- Tested and validated on real hardware (Pixhawk 6C + Raspberry Pi 4)
 
 ### Features
 - Dual environment support (SITL + Real Hardware)
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Production-ready configuration files
 
 ### Tested On
-- **Hardware:** Cube Orange flight controller
+- **Hardware:** Pixhawk 6C flight controller
 - **Companion Computer:** Raspberry Pi 4 (4GB)
 - **ROS2 Version:** Humble Hawksbill
 - **ArduPilot:** ArduCopter 4.x

@@ -176,7 +176,7 @@ sudo apt install ros-humble-[package-name]
 → **Continue to:** [03-MAVROS-INSTALLATION.md](03-MAVROS-INSTALLATION.md)
 
 ---
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware  
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware  
 
 **Official Docs:** https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
 

@@ -243,5 +243,5 @@ source install/setup.bash
 
 ---
 
-**Author:** Sidharth Mohan Nair  
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien  
+**GitHub:** https://github.com/phantrungtien

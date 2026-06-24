@@ -19,8 +19,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Sidharth Mohan Nair',
-    maintainer_email='sidharthmohannair@gmail.com',
+    maintainer='phantrungtien',
+    maintainer_email='phantrungtien1034@gmail.com',
     description='MAVROS configuration for ArduPilot SITL simulation with ROS2 Humble',
     license='Apache-2.0',
     extras_require={

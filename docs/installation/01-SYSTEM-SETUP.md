@@ -119,4 +119,4 @@ pip 22.x.x
 
 ---
 
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware

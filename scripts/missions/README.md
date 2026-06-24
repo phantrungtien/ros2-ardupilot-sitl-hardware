@@ -1,6 +1,20 @@
 # MAVROS Mission Scripts
 
-Python scripts for autonomous drone control via MAVROS and ArduPilot SITL.
+Autonomous drone control via MAVROS and ArduPilot SITL.
+
+> **Where the missions live:** the canonical, maintained missions are ROS2
+> nodes in the **`simtofly_mavros_sitl`** package, run with `ros2 run` or via
+> the all-in-one [`sitl_mission.launch.py`](../../src/simtofly_mavros_sitl/launch/sitl_mission.launch.py).
+> This `scripts/missions/` folder keeps **standalone copies** of
+> `mission_simple.py` and `trackinghuman.py` that you can run directly with
+> `python3` (no `colcon build` needed) for quick experiments.
+
+| Mission | Package executable | Standalone script | What it does |
+|---------|--------------------|-------------------|--------------|
+| `mission_simple` | ✅ | ✅ (here) | Takeoff → forward 10 m → RTL |
+| `mission_circle` | ✅ | — | Velocity-based circular flight |
+| `trackinghuman` | ✅ | ✅ (here) | Vision-driven human following |
+| `verify_frame` | ✅ | — | ENU/yaw frame-convention probe |
 
 ---
 
@@ -17,11 +31,16 @@ Python scripts for autonomous drone control via MAVROS and ArduPilot SITL.
 5. ✅ **Wait 3 seconds**
 6. ✅ **Return to Launch (RTL)**
 
-**How to run:**
+**How to run (package executable — recommended):**
 ```bash
 cd ~/ros2-ardupilot-sitl-hardware
 source /opt/ros/humble/setup.bash
 source install/setup.bash
+ros2 run simtofly_mavros_sitl mission_simple
+```
+
+**Or run the standalone copy directly (no build needed):**
+```bash
 python3 scripts/missions/mission_simple.py
 ```
 
@@ -61,9 +80,55 @@ table and the bank-angle limit `φ ≈ atan(V²/Rg)`.
 
 ---
 
+### `trackinghuman.py` - Vision-Driven Human Follow 🧍
+
+Follows a person under MAVROS/GUIDED. It does **not** detect anything itself —
+a separate vision node feeds it two topics, and it turns them into body-frame
+velocity + yaw_rate setpoints on `/mavros/setpoint_raw/local`:
+
+| Topic | Type | Meaning |
+|-------|------|---------|
+| `/follow/command` | `std_msgs/String` | `FOLLOW` \| `BACK_OFF` \| `SEARCH` \| `IDLE` |
+| `/follow/target`  | `geometry_msgs/Vector3` | `x`=ang_x(deg), `y`=ang_y(deg), `z`=distance(m) |
+
+Control is **yaw-and-go**: yaw to centre the person, then hold the `STANDOFF_M`
+distance; altitude is held constant. Safety: streams at 20 Hz, hovers on vision
+loss (`VISION_TIMEOUT`), RTLs after `LOST_RTL_SEC`, releases control if the
+pilot leaves GUIDED, and caps altitude at `MAX_ALT`. Tunables sit at the top of
+`trackinghuman.py`.
+
+```bash
+ros2 run simtofly_mavros_sitl trackinghuman
+# or, via the all-in-one launch:
+ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=trackinghuman
+```
+
+---
+
+### `verify_frame.py` - Frame-Convention Probe 🧭
+
+A one-shot diagnostic, **not** a mission. It flies GUIDED → arm → takeoff, then
+commands `vx+`, `vy+` and `yaw=0` on `/mavros/setpoint_raw/local` and measures
+the resulting ENU pose deltas, so you can confirm empirically how setpoint
+commands map onto the pose frame before trusting velocity-based missions. It
+prints a summary and RTLs.
+
+```bash
+ros2 run simtofly_mavros_sitl verify_frame
+```
+
+SITL-confirmed result (already baked into the missions): `vx+` → **+East**,
+`vy+` → **+North**, `yaw=0` → nose points **East** (ENU).
+
+---
+
 ## Prerequisites
 
-Before running any script, you need:
+> **Shortcut:** the all-in-one launch starts SITL **and** MAVROS **and** the
+> mission for you (with Gazebo), so you can skip the manual steps below:
+> `ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_simple`
+
+To run a mission **manually** (headless SITL, no Gazebo) you need:
 
 ### 1. Start SITL (Terminal 1)
 ```bash
@@ -98,10 +163,10 @@ self.takeoff(10.0)  # Change to desired altitude in meters
 **Forward distance:**
 ```python
 self.move_to_position(10.0, 0.0, 10.0, duration=15)
-# First parameter = forward distance (X-axis)
-# Second parameter = lateral distance (Y-axis)
-# Third parameter = altitude to maintain
-# duration = time to publish setpoints (seconds)
+# First parameter  = X / East   (m)   <- ENU, not "forward"
+# Second parameter = Y / North  (m)
+# Third parameter  = Z / altitude to hold (m)
+# duration         = how long to publish setpoints (seconds)
 ```
 
 **Wait time:**
@@ -135,11 +200,16 @@ qos_profile = QoSProfile(
 - Only publishes setpoints **after** takeoff completes
 - Publishes at 20Hz when moving to waypoints
 
-### Frame of Reference
-- Uses `map` frame for local position control
-- X-axis = Forward (North)
-- Y-axis = Right (East)
-- Z-axis = Up (altitude)
+### Frame of Reference (ENU)
+The MAVROS local frame is **ENU**, confirmed in SITL with `verify_frame`:
+- **X-axis = East**
+- **Y-axis = North**
+- **Z-axis = Up** (altitude)
+- **Yaw: 0 = East, +90° = North** (CCW positive)
+
+So a velocity `vx>0` moves the drone **East** and `vy>0` moves it **North**
+(not "forward"). `move_to_position(10, 0, 10)` therefore moves **+10 m East**
+while holding 10 m altitude.
 
 ---
 

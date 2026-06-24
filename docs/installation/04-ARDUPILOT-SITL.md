@@ -231,7 +231,7 @@ pip3 install --user pymavlink MAVProxy
 
 ```bash
 # Clone this repository
-git clone https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware.git
+git clone https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware.git
 cd ros2-ardupilot-sitl-hardware
 
 # Build packages
@@ -256,4 +256,4 @@ source install/setup.bash && python3 scripts/missions/mission_simple.py  # Termi
 
 ---
 
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware

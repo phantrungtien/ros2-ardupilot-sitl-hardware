@@ -374,5 +374,5 @@ pkill -9 -f sim_vehicle
 
 ---
 
-**Author:** Sidharth Mohan Nair  
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
+**Author:** phantrungtien  
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware

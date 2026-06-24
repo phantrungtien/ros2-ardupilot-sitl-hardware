@@ -5,7 +5,7 @@ Thank you for your interest in contributing! This project helps researchers, stu
 ## 🎯 How You Can Contribute
 
 ### 1. **Report Bugs**
-- Use the [GitHub Issues](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues) page
+- Use the [GitHub Issues](https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues) page
 - Include your environment details (ROS2 version, hardware, OS)
 - Provide steps to reproduce the issue
 - Include relevant logs and error messages
@@ -129,8 +129,8 @@ When contributing features related to **real hardware**:
 
 ## Getting Help
 
-- **Questions:** Open a [Discussion](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/discussions)
-- **Bugs:** Open an [Issue](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues)
+- **Questions:** Open a [Discussion](https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/discussions)
+- **Bugs:** Open an [Issue](https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues)
 - **Ideas:** Open an issue with `enhancement` tag
 
 ---
@@ -165,9 +165,9 @@ Contributors will be:
 
 ## Contact
 
-**Maintainer:** Sidharth Mohan Nair  
-**GitHub:** [@sidharthmohannair](https://github.com/sidharthmohannair)  
-**Email:** sidharthmohannair@gmail.com
+**Maintainer:** phantrungtien  
+**GitHub:** [@phantrungtien](https://github.com/phantrungtien)  
+**Email:** phantrungtien1034@gmail.com
 
 ---
 

@@ -2,8 +2,8 @@
 """
 Simple Working Mission Script
 ------------------------------
-Author: Sidharth Mohan Nair
-GitHub: https://github.com/sidharthmohannair
+Author: phantrungtien
+GitHub: https://github.com/phantrungtien
 
 Mission Steps:
 1. Set GUIDED mode

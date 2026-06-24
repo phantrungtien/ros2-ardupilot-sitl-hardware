@@ -4,14 +4,14 @@
   <name>simtofly_mavros_sitl</name>
   <version>1.0.0</version>
   <description>MAVROS configuration package for ArduPilot SITL simulation. Works with ArduCopter software-in-the-loop simulation.</description>
-  <maintainer email="sidharthmohannair@gmail.com">Sidharth Mohan Nair</maintainer>
+  <maintainer email="phantrungtien1034@gmail.com">phantrungtien</maintainer>
   <license>Apache-2.0</license>
 
-  <url type="website">https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware</url>
-  <url type="repository">https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware</url>
-  <url type="bugtracker">https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues</url>
+  <url type="website">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware</url>
+  <url type="repository">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware</url>
+  <url type="bugtracker">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues</url>
 
-  <author email="sidharthmohannair@gmail.com">Sidharth Mohan Nair</author>
+  <author email="phantrungtien1034@gmail.com">phantrungtien</author>
 
   <!-- Runtime dependencies -->
   <depend>mavros_msgs</depend>

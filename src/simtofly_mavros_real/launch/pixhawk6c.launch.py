@@ -2,8 +2,8 @@
 """
 MAVROS Launch File for Real Hardware (Pixhawk via TELEM3)
 ----------------------------------------------------------
-Author: Sidharth Mohan Nair
-GitHub: https://github.com/sidharthmohannair
+Author: phantrungtien
+GitHub: https://github.com/phantrungtien
 
 Connection: TELEM3 (SERIAL4) -> TX/RX/GND GPIO pins on companion computer
 Device: /dev/ttyAMA0

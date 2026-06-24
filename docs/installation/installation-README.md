@@ -67,7 +67,7 @@ Once all steps complete:
 ### Clone This Repository
 
 ```bash
-git clone https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware.git
+git clone https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware.git
 cd ros2-ardupilot-sitl-hardware
 ```
 
@@ -93,8 +93,12 @@ source install/setup.bash
 **Terminal 3:**
 ```bash
 source install/setup.bash
-python3 scripts/missions/mission_simple.py
+ros2 run simtofly_mavros_sitl mission_simple
 ```
+
+> **Tip:** prefer one command? The all-in-one launch starts Gazebo, SITL,
+> MAVROS and the mission together:
+> `ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_simple`
 
 ---
 
@@ -105,7 +109,7 @@ If you encounter issues:
 1. **Check each step completed successfully** - Don't skip steps
 2. **See troubleshooting sections** - Each guide has troubleshooting
 3. **Review error messages carefully** - Often self-explanatory
-4. **Search GitHub Issues:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues
+4. **Search GitHub Issues:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues
 
 ---
 
@@ -135,10 +139,10 @@ If you encounter issues:
 
 ## Need Help?
 
-- **Issues:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues
-- **Discussions:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/discussions
+- **Issues:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues
+- **Discussions:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/discussions
 
 ---
 
-**Author:** Sidharth Mohan Nair  
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
+**Author:** phantrungtien  
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware

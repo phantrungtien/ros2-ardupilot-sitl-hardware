@@ -328,8 +328,8 @@ No Heartbeat Packets Received
    ```
 
 2. **Ask for help:**
-   - [GitHub Issues](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/issues)
-   - [GitHub Discussions](https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware/discussions)
+   - [GitHub Issues](https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues)
+   - [GitHub Discussions](https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/discussions)
 
 3. **Include in your report:**
    - OS version: `lsb_release -a`
@@ -339,5 +339,5 @@ No Heartbeat Packets Received
 
 ---
 
-**Author:** Sidharth Mohan Nair  
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien  
+**GitHub:** https://github.com/phantrungtien

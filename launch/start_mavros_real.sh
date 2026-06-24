@@ -1,7 +1,7 @@
 #!/bin/bash
-# Script to start MAVROS for real hardware (Cube Orange)
-# Author: Sidharth Mohan Nair
-# GitHub: https://github.com/sidharthmohannair
+# Script to start MAVROS for real hardware (Pixhawk 6C)
+# Author: phantrungtien
+# GitHub: https://github.com/phantrungtien
 
 echo "========================================="
 echo "Starting MAVROS for Real Hardware"

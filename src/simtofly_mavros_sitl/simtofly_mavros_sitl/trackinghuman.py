@@ -22,7 +22,7 @@ An toàn (theo luật offboard/guided):
 CẢNH BÁO: test theo thứ tự SITL -> HITL -> bay thật ngoài trời, luôn có safety pilot
 cầm RC sẵn sàng giành quyền. Lần đầu nên THÁO CÁNH QUẠT.
 
-Author của khung mission gốc: Sidharth Mohan Nair (github.com/sidharthmohannair)
+Author của khung mission gốc: phantrungtien (github.com/phantrungtien)
 """
 
 import math

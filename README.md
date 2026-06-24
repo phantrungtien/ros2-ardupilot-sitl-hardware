@@ -10,7 +10,7 @@
 
 
 
-Validated on real flights with Cube Orange flight controller and Raspberry Pi 4.
+Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial link) and a Raspberry Pi 4 companion computer.
 
 ---
 
@@ -43,9 +43,9 @@ Validated on real flights with Cube Orange flight controller and Raspberry Pi 4.
                     ▼                           ▼
         ┌───────────────────┐       ┌───────────────────┐
         │   SITL Simulator  │       │   Real Hardware   │
-        │   (UDP:14550)     │       │   (/dev/ttyACM0)  │
-        │                   │       │                   │
-        │   ArduPilot       │       │  Cube Orange      │
+        │   (UDP:14550)     │       │  (/dev/ttyAMA0)   │
+        │                   │       │   921600 baud     │
+        │   ArduPilot       │       │  Pixhawk 6C       │
         │   Virtual Drone   │       │  Flight Controller│
         └───────────────────┘       └───────────────────┘
                                             │
@@ -63,7 +63,7 @@ Validated on real flights with Cube Orange flight controller and Raspberry Pi 4.
 
 - **Companion Computer Control** - Command drone autonomously from Raspberry Pi in GUIDED mode
 - **SITL & Hardware Testing** - Test missions in simulation, then deploy same code to real drone
-- **Flight Validated** - Tested on [FuryVision AAV](https://github.com/sidharthmohannair/Fury-Drone-Project) in autonomous flight
+- **Flight Validated** - Tested in autonomous GUIDED flight on real hardware (Pixhawk 6C)
 - **Safety First** - Comprehensive pre-flight checks and emergency procedures
 - **Ground Station Optional** - Mission Planner/QGroundControl for monitoring
 - **Complete Workflow** - SITL testing → Bench testing → Flight testing documented
@@ -83,33 +83,48 @@ Validated on real flights with Cube Orange flight controller and Raspberry Pi 4.
 ---
 
 ### Test in Simulation
-```bash
-# 1. Clone this repository
-git clone https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware.git
-cd ros2-ardupilot-sitl-hardware
 
-# 2. Build packages
+```bash
+# Clone and build
+git clone https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware.git
+cd ros2-ardupilot-sitl-hardware
 colcon build
 source install/setup.bash
+```
 
-# 3. Make scripts executable (first time only)
-chmod +x launch/*.sh
+**Option A — All-in-one launch (Gazebo + SITL + MAVROS + mission).**
+One command opens Gazebo, ArduPilot SITL, MAVROS and the mission, each in its
+own terminal window and ordered by *readiness* (each window waits for its
+dependency, not a timer):
 
-# 4. Start SITL (Terminal 1)
+```bash
+ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_simple
+```
+
+Swap the mission for `mission_circle`, `trackinghuman` or `verify_frame`.
+Requires Gazebo + the `ardupilot_gazebo` plugin — see
+[SITL Setup](docs/guides/SITL_SETUP.md).
+
+**Option B — Manual, headless SITL (no Gazebo), three terminals:**
+
+```bash
+chmod +x launch/*.sh          # first time only
+
+# Terminal 1 — ArduPilot SITL
 ./launch/start_sitl.sh
 
-# 5. Start MAVROS (Terminal 2)
+# Terminal 2 — MAVROS
 ./launch/start_mavros.sh
 
-# 6. Run autonomous mission (Terminal 3)
+# Terminal 3 — run a mission from the package
 source install/setup.bash
-python3 scripts/missions/mission_simple.py
+ros2 run simtofly_mavros_sitl mission_simple
 
-# 7. Stop cleanly when done
+# When done, stop everything cleanly
 ./launch/stop_all.sh
 ```
 
-**Watch your drone takeoff in the SITL map!**
+**Watch your drone take off in the SITL map!**
 
 ---
 
@@ -162,15 +177,16 @@ The pure controller geometry lives in `circle_control.py` and is unit-tested
 # 1. Stop SITL completely
 ./launch/stop_all.sh
 
-# 2. Connect Cube Orange via USB to Raspberry Pi
+# 2. Wire the Pixhawk 6C to the Raspberry Pi:
+#    TELEM3 (SERIAL4) UART -> RPi GPIO UART (/dev/ttyAMA0 @ 921600)
 
 # 3. Start MAVROS for hardware (Terminal 1)
 ./launch/start_mavros_real.sh
-# Answer safety prompts
+# Answer the safety prompts
 
-# 4. Run SAME mission (Terminal 2)
+# 4. Run the SAME mission (Terminal 2)
 source install/setup.bash
-python3 scripts/missions/mission_simple.py
+ros2 run simtofly_mavros_sitl mission_simple
 ```
 
 **⚠️ CRITICAL:** Remove propellers for bench testing!
@@ -191,13 +207,22 @@ See **[WORKFLOW.md](docs/WORKFLOW.md)** for:
 ## Repository Structure
 
 ```
-├── src/                          # ROS2 packages
-│   ├── simtofly_mavros_sitl/    # SITL simulation configuration
-│   └── simtofly_mavros_real/    # Real hardware configuration
-├── scripts/missions/             # Autonomous mission examples
-├── launch/                       # Helper scripts (start/stop)
-├── docs/                         # Complete documentation
-└── README.md                     # You are here
+├── src/                                  # ROS2 packages
+│   ├── simtofly_mavros_sitl/             # SITL package: missions + launch + tests
+│   │   ├── simtofly_mavros_sitl/
+│   │   │   ├── guided_base.py            # shared GUIDED -> arm -> takeoff helpers
+│   │   │   ├── circle_control.py         # pure circle geometry (no ROS, unit-tested)
+│   │   │   ├── mission_simple.py         # takeoff -> forward -> RTL
+│   │   │   ├── mission_circle.py         # velocity-based circular flight
+│   │   │   ├── trackinghuman.py          # vision-driven human follow
+│   │   │   └── verify_frame.py           # ENU/yaw frame-convention probe
+│   │   ├── launch/sitl_mission.launch.py # Gazebo + SITL + MAVROS + mission (all-in-one)
+│   │   └── test/test_circle_control.py   # unit tests for circle geometry
+│   └── simtofly_mavros_real/             # Real-hardware MAVROS launch (Pixhawk 6C)
+├── scripts/missions/                     # Standalone copies (run with python3)
+├── launch/                               # Helper shell scripts (start/stop SITL & MAVROS)
+├── docs/                                 # Installation, workflow, hardware docs
+└── README.md                             # You are here
 ```
 
 ---
@@ -214,7 +239,6 @@ See **[WORKFLOW.md](docs/WORKFLOW.md)** for:
 - **[Mission Planner Connection](docs/guides/MISSION_PLANNER_SETUP.md)** - Ground station monitoring (optional)
 
 ### Reference
-- **[Hardware Platform](docs/HARDWARE-REFERENCE.md)** - FuryVision AAV specifications and test data
 - **[Mission Examples](scripts/missions/README.md)** - Write autonomous missions in Python
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
@@ -224,21 +248,16 @@ See **[WORKFLOW.md](docs/WORKFLOW.md)** for:
 
 This framework has been validated on the following configuration:
 
-### **Primary Test Platform: FuryVision AAV**
+### **Primary Test Platform**
 
-**Flight Controller:** Pixhawk 6C 
-**Companion Computer:** Raspberry Pi 4 (8GB)  
-**Firmware:** ArduCopter v4.5.7  
-**ROS2 Version:** Humble Hawksbill  
-**OS:** Ubuntu 22.04 LTS
-
-
-
-
-**Why This Platform:**
-- ✅ **Fully open source** - CAD files, assembly guide, wiring diagrams available
-- ✅ **Flight tested** - 8+ minutes flight time, stable autonomous performance
-- ✅ **Well documented** - Complete build and test procedures
+| Component | Detail |
+|-----------|--------|
+| **Flight Controller** | Pixhawk 6C |
+| **Connection** | TELEM3 (SERIAL4) UART → RPi, `/dev/ttyAMA0` @ 921600 |
+| **Companion Computer** | Raspberry Pi 4 (8GB) |
+| **Firmware** | ArduCopter v4.5.7 |
+| **ROS2 Version** | Humble Hawksbill |
+| **OS** | Ubuntu 22.04 LTS |
 
 ---
 
@@ -247,18 +266,15 @@ This framework has been validated on the following configuration:
 | Component | Validated | Notes |
 |-----------|-----------|-------|
 | **Flight Controllers** | | |
-| Cube Orange+ | ✅ Tested | Primary platform |
-| Cube Orange | ⚠️ Compatible | Should work with same setup |
+| Pixhawk 6C | ✅ Tested | Primary platform (TELEM3 UART, `/dev/ttyAMA0` @ 921600) |
+| Cube Orange / Orange+ | ⚠️ Compatible | Should work with same setup |
 | Pixhawk 4 | ⚠️ Compatible | Should work with same setup |
-| Pixhawk 6C | ⚠️ Compatible | Should work with same setup |
 | **Companion Computers** | | |
 | Raspberry Pi 4 (4GB+) | ✅ Tested | Ubuntu 22.04 native |
 | Raspberry Pi 5 | ⚠️ Compatible | May require Docker (Ubuntu 22.04 support) |
 | Jetson Nano | ⚠️ Compatible | Different architecture, may need adjustments |
 
 **Note:** "Compatible" means theoretically supported but not tested by maintainer. **Some hardware may work without changes, others may require minor modifications** such as serial port names, baud rates, or Docker setup for OS compatibility. Community testing and feedback welcome!
-
-**For complete hardware specifications:** [Hardware Reference](docs/HARDWARE-REFERENCE.md)
 
 ---
 

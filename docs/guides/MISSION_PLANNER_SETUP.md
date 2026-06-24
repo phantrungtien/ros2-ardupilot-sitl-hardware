@@ -1,7 +1,7 @@
 # Mission Planner Connection Setup
 
-**Author:** Sidharth Mohan Nair
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien
+**GitHub:** https://github.com/phantrungtien
 
 Guide to connect Mission Planner on your laptop to MAVROS running on Raspberry Pi.
 
@@ -314,5 +314,5 @@ Each laptop can run Mission Planner/QGC on port 14550.
 
 **Happy Flying!** 🚁
 
-**Author:** Sidharth Mohan Nair
-**GitHub:** https://github.com/sidharthmohannair
+**Author:** phantrungtien
+**GitHub:** https://github.com/phantrungtien

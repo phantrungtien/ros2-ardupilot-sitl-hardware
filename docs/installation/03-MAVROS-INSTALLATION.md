@@ -169,4 +169,4 @@ sudo apt install ros-humble-mavros ros-humble-mavros-extras -y
 
 ---
 
-**Repository:** https://github.com/sidharthmohannair/ros2-ardupilot-sitl-hardware
+**Repository:** https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware
