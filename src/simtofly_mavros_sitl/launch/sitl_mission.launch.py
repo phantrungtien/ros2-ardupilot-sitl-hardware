@@ -39,7 +39,8 @@ Requirements (already present on this machine):
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
-from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PythonExpression
 
 # Source ROS + this workspace overlay (bash -c skips ~/.bashrc).
 ROS_SETUP = (
@@ -92,7 +93,7 @@ GAZEBO_CMD = (
     'export GZ_SIM_RESOURCE_PATH='
     '$HOME/gz_ws/src/ardupilot_gazebo/models:$HOME/gz_ws/src/ardupilot_gazebo/worlds\n'
     'cd $HOME/gz_ws/src/ardupilot_gazebo\n'
-    'gz sim -v4 -r worlds/iris_runway.sdf'
+    'gz sim -v4 -r worlds/'   # world file name is appended (launch arg)
 )
 
 # 2) ArduPilot SITL bound to Gazebo (absolute sim_vehicle.py path -> no PATH dep).
@@ -112,35 +113,62 @@ MAVROS_CMD = (
 )
 
 
-def gnome_term(title, *parts):
+def gnome_term(title, *parts, condition=None):
     """ExecuteProcess that runs `parts` (shell command pieces) in its own
     gnome-terminal window, kept open afterwards (`exec bash`) for readable logs.
 
-    `parts` may include launch substitutions (e.g. the mission name)."""
+    `parts` may include launch substitutions (e.g. the mission name).
+    `condition` (optional) gates whether the window opens at all."""
     return ExecuteProcess(
         prefix=f'gnome-terminal --title={title} --',
         cmd=['bash', '-c', list(parts) + ['\nexec bash']],
         output='screen',
+        condition=condition,
     )
 
 
 def generate_launch_description():
     mission = LaunchConfiguration('mission')
+    world = LaunchConfiguration('world')
+
+    # The vision window only makes sense for the human-follow controller:
+    # person_follow publishes /follow/command + /follow/target, which only
+    # `trackinghuman` consumes. For any other mission it stays closed.
+    vision_on = IfCondition(
+        PythonExpression(["'", mission, "' == 'trackinghuman'"]))
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'mission',
             default_value='mission_simple',
-            description='Mission executable: mission_simple | trackinghuman',
+            description='Mission executable: mission_simple | mission_circle | '
+                        'mission_gates | trackinghuman | verify_frame',
+        ),
+        DeclareLaunchArgument(
+            'world',
+            default_value='iris_runway.sdf',
+            description='Gazebo world under worlds/: iris_runway.sdf | '
+                        'gates_course.sdf (fly the rings with mission_gates)',
         ),
 
-        # All four windows open at once. Ordering is enforced by the wait-loops
+        # All windows open at once. Ordering is enforced by the wait-loops
         # inside each window, not by timers.
-        gnome_term('Gazebo', GAZEBO_CMD),
+        gnome_term('Gazebo', GAZEBO_CMD, world),
         gnome_term('SITL', SITL_CMD),
         gnome_term('MAVROS', MAVROS_CMD),
         gnome_term(
             'Mission',
             ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_mavros_sitl ', mission,
+        ),
+
+        # Vision node (person detect + ReID) -> publishes /follow/*. Opens ONLY
+        # when mission == trackinghuman. Needs torch/ultralytics/opencv in the
+        # ROS python env + a real camera (see src/simtofly_vision/README.md);
+        # if those are missing it fails visibly in its own window, harmless to
+        # the rest of the stack.
+        gnome_term(
+            'Vision',
+            ROS_SETUP + 'ros2 run simtofly_vision person_follow',
+            condition=vision_on,
         ),
     ])

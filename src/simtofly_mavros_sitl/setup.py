@@ -34,6 +34,7 @@ setup(
             'trackinghuman = simtofly_mavros_sitl.trackinghuman:main',
             'verify_frame = simtofly_mavros_sitl.verify_frame:main',
             'mission_circle = simtofly_mavros_sitl.mission_circle:main',
+            'mission_gates = simtofly_mavros_sitl.mission_gates:main',
         ],
     },
 )

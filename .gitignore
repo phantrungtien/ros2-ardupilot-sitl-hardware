@@ -60,6 +60,12 @@ site/
 ehthumbs.db
 Thumbs.db
 
+# ML model weights (auto-downloaded by ultralytics; too big for git)
+*.pt
+*.pth
+*.onnx
+*.engine
+
 # Custom ignore (add project-specific files here if needed)
 # For example, if you have local test files:
 # test_output/
