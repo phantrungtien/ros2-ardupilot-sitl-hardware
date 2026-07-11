@@ -8,7 +8,7 @@
 
 
 
-Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial link) and a companion computer (Raspberry Pi 4).
+Validated on real flights with a Pixhawk 6C flight controller (TELEM3 serial link) and a companion computer (Raspberry Pi 4 or NVIDIA Jetson).
 
 ---
 
@@ -265,8 +265,6 @@ This framework has been validated on the following configuration:
 |-----------|-----------|-------|
 | **Flight Controllers** | | |
 | Pixhawk 6C | ✅ Tested | Primary platform (TELEM3 UART, `/dev/ttyAMA0` @ 921600) |
-| Cube Orange / Orange+ | ⚠️ Compatible | Should work with same setup |
-| Pixhawk 4 | ⚠️ Compatible | Should work with same setup |
 | **Companion Computers** | | |
 | Raspberry Pi 4 (4GB+) | ✅ Tested | Ubuntu 22.04 native |
 | Raspberry Pi 5 | ⚠️ Compatible | May require Docker (Ubuntu 22.04 support) |
