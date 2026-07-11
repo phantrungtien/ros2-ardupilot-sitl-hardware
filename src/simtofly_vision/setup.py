@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'person_follow = simtofly_vision.person_follow_reid:main',
+            'gate_detect = simtofly_vision.gate_detect:main',
         ],
     },
 )

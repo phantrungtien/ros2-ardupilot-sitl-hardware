@@ -1,0 +1,7 @@
+========================================================
+GATES (vision): search-spin -> centre -> fly through -> RTL
+========================================================
+Waiting for FCU connection...
+✓ FCU connected
+Arming (retry until prearm/EKF/GPS ready)...
+x could not arm

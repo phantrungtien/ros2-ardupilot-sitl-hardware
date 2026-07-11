@@ -1,0 +1,36 @@
+[INFO] [1783756930.040154904] [gate_detect]: ring none  off=(+0.00,+0.00) fill=0.00 defo=0.00
+[INFO] [1783756933.665415252] [gate_detect]: ring none  off=(+0.00,+0.00) fill=0.00 defo=0.00
+[INFO] [1783756937.229385992] [gate_detect]: ring none  off=(+0.00,+0.00) fill=0.00 defo=0.00
+[INFO] [1783756940.961660958] [gate_detect]: ring none  off=(+0.00,+0.00) fill=0.00 defo=0.00
+[INFO] [1783756944.611885189] [gate_detect]: ring none  off=(+0.00,+0.00) fill=0.00 defo=0.00
+[gate_detect] enable_streaming -> /world/gates_course/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image/enable_streaming
+[WARN] [1783757000.909390286] [gate_detect]: camera stream ended
+Traceback (most recent call last):
+  File "/home/phantrungtien/ros2-ardupilot-sitl-hardware/install/simtofly_vision/lib/python3.10/site-packages/simtofly_vision/gate_detect.py", line 191, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/phantrungtien/ros2-ardupilot-sitl-hardware/install/simtofly_vision/lib/simtofly_vision/gate_detect", line 33, in <module>
+    sys.exit(load_entry_point('simtofly_vision==1.0.0', 'console_scripts', 'gate_detect')())
+  File "/home/phantrungtien/ros2-ardupilot-sitl-hardware/install/simtofly_vision/lib/python3.10/site-packages/simtofly_vision/gate_detect.py", line 196, in main
+    rclpy.shutdown()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 130, in shutdown
+    _shutdown(context=context)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/utilities.py", line 58, in shutdown
+    return context.shutdown()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/context.py", line 102, in shutdown
+    self.__context.shutdown()
+rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:241

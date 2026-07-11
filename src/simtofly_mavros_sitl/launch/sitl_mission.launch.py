@@ -137,6 +137,11 @@ def generate_launch_description():
     vision_on = IfCondition(
         PythonExpression(["'", mission, "' == 'trackinghuman'"]))
 
+    # The gates mission is camera-driven too: gate_detect reads the gimbal
+    # stream and publishes /gate/obs, which mission_gates flies through.
+    gate_vision_on = IfCondition(
+        PythonExpression(["'", mission, "' == 'mission_gates'"]))
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'mission',
@@ -170,5 +175,15 @@ def generate_launch_description():
             'Vision',
             ROS_SETUP + 'ros2 run simtofly_vision person_follow',
             condition=vision_on,
+        ),
+
+        # Gate detector (orange-ring ellipse) -> publishes /gate/obs. Opens
+        # ONLY when mission == mission_gates. It enables the camera stream
+        # itself (gz topic) and reads it via gst-launch, so it must start
+        # after Gazebo is up -- it retries the stream, harmless if early.
+        gnome_term(
+            'GateVision',
+            ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_vision gate_detect',
+            condition=gate_vision_on,
         ),
     ])

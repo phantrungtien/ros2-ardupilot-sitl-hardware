@@ -1,0 +1,19 @@
+[15:02:01] gazebo pid 58870
+[15:02:01] FDM 9002 up (1s)
+[15:02:01] sitl pid 58882
+[15:02:01] SITL 5760 up (1s)
+[15:02:01] mavros pid 58894
+[15:02:04] mavros connected check (1s): connected: false
+[15:02:04] gate_detect pid 59287
+[15:02:08] mission pid 59481
+[15:03:15] mission marker at 68s
+[15:03:20] --- mission.log tail ---
+========================================================
+GATES (vision): search-spin -> centre -> fly through -> RTL
+========================================================
+Waiting for FCU connection...
+✓ FCU connected
+Arming (retry until prearm/EKF/GPS ready)...
+x could not arm
+[15:03:20] tearing down
+[15:03:20] orchestrator done

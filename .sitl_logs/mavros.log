@@ -1,0 +1,2249 @@
+[INFO] [launch]: All log files can be found below /home/phantrungtien/.ros/log/2026-07-11-15-02-02-295115-phan-Nitro-AN515-58-58894
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [mavros_node-1]: process started with pid [58978]
+[mavros_node-1] [INFO] [1783756922.519854336] [mavros.mavros_node]: Starting mavros_node container
+[mavros_node-1] [INFO] [1783756922.519983100] [mavros.mavros_node]: FCU URL: tcp://127.0.0.1:5760
+[mavros_node-1] [INFO] [1783756922.519991590] [mavros.mavros_node]: GCS URL: 
+[mavros_node-1] [INFO] [1783756922.519996970] [mavros.mavros_node]: UAS Prefix: /uas1
+[mavros_node-1] [INFO] [1783756922.520001275] [mavros.mavros_node]: Starting mavros router node
+[mavros_node-1] [INFO] [1783756922.527387985] [mavros.mavros_router]: Built-in SIMD instructions: SSE, SSE2
+[mavros_node-1] [INFO] [1783756922.527410168] [mavros.mavros_router]: Built-in MAVLink package version: 2026.6.6
+[mavros_node-1] [INFO] [1783756922.527417595] [mavros.mavros_router]: Known MAVLink dialects: common ardupilotmega ASLUAV AVSSUAS all csAirLink cubepilot development icarous loweheiser marsh matrixpilot paparazzi standard stemstudios storm32 uAvionix ualberta
+[mavros_node-1] [INFO] [1783756922.527425211] [mavros.mavros_router]: MAVROS Router started
+[mavros_node-1] [INFO] [1783756922.527464825] [mavros.mavros_node]: Starting mavros uas node
+[mavros_node-1] [INFO] [1783756922.556596805] [mavros.mavros_router]: Requested to add endpoint: type: 0, url: tcp://127.0.0.1:5760
+[mavros_node-1] [INFO] [1783756922.556653842] [mavros.mavros_router]: Endpoint link[1000] created
+[mavros_node-1] [INFO] [1783756922.557021455] [mavros.mavros_router]: link[1000] opened successfully
+[mavros_node-1] [INFO] [1783756922.557039709] [mavros.mavros_router]: Requested to add endpoint: type: 2, url: /uas1
+[mavros_node-1] [INFO] [1783756922.557052315] [mavros.mavros_router]: Endpoint link[1001] created
+[mavros_node-1] [INFO] [1783756922.558468242] [mavros.mavros_router]: link[1001] opened successfully
+[mavros_node-1] [INFO] [1783756922.566701654] [mavros.mavros]: UAS Executor started, threads: 16
+[mavros_node-1] [INFO] [1783756922.566745822] [mavros.mavros]: Plugin actuator_control ignored
+[mavros_node-1] [INFO] [1783756922.582403156] [mavros.mavros]: Plugin adsb created
+[mavros_node-1] [INFO] [1783756922.582447791] [mavros.mavros]: Plugin adsb initialized
+[mavros_node-1] [INFO] [1783756922.582453769] [mavros.mavros]: Plugin altitude ignored
+[mavros_node-1] [INFO] [1783756922.588909272] [mavros.mavros]: Plugin cam_imu_sync created
+[mavros_node-1] [INFO] [1783756922.588945286] [mavros.mavros]: Plugin cam_imu_sync initialized
+[mavros_node-1] [INFO] [1783756922.594030677] [mavros.mavros]: Plugin camera created
+[mavros_node-1] [INFO] [1783756922.594081369] [mavros.mavros]: Plugin camera initialized
+[mavros_node-1] [INFO] [1783756922.603678446] [mavros.mavros]: Plugin cellular_status created
+[mavros_node-1] [INFO] [1783756922.603708221] [mavros.mavros]: Plugin cellular_status initialized
+[mavros_node-1] [INFO] [1783756922.621955670] [mavros.mavros]: Plugin command created
+[mavros_node-1] [INFO] [1783756922.621997107] [mavros.mavros]: Plugin command initialized
+[mavros_node-1] [INFO] [1783756922.627761171] [mavros.mavros]: Plugin companion_process_status created
+[mavros_node-1] [INFO] [1783756922.627815362] [mavros.mavros]: Plugin companion_process_status initialized
+[mavros_node-1] [INFO] [1783756922.627826131] [mavros.mavros]: Plugin debug_value ignored
+[mavros_node-1] [INFO] [1783756922.633351593] [mavros.distance_sensor]: DS: rangefinder_pub: Loading config: id: 0
+[mavros_node-1] frame_id: lidar
+[mavros_node-1] field_of_view: 0.0
+[mavros_node-1] send_tf: false
+[mavros_node-1] sensor_position: {x: 0.0, y: 0.0, z: -0.1}
+[mavros_node-1] [INFO] [1783756922.634256578] [mavros.distance_sensor]: DS: rangefinder_sub: Loading config: subscriber: true
+[mavros_node-1] id: 1
+[mavros_node-1] orientation: PITCH_270
+[mavros_node-1] [INFO] [1783756922.634605737] [mavros.mavros]: Plugin distance_sensor created
+[mavros_node-1] [INFO] [1783756922.634628151] [mavros.mavros]: Plugin distance_sensor initialized
+[mavros_node-1] [INFO] [1783756922.639934044] [mavros.mavros]: Plugin esc_status created
+[mavros_node-1] [INFO] [1783756922.639971848] [mavros.mavros]: Plugin esc_status initialized
+[mavros_node-1] [INFO] [1783756922.645318685] [mavros.mavros]: Plugin esc_telemetry created
+[mavros_node-1] [INFO] [1783756922.645364448] [mavros.mavros]: Plugin esc_telemetry initialized
+[mavros_node-1] [INFO] [1783756922.652203776] [mavros.mavros]: Plugin fake_gps created
+[mavros_node-1] [INFO] [1783756922.652238717] [mavros.mavros]: Plugin fake_gps initialized
+[mavros_node-1] [INFO] [1783756922.652244691] [mavros.mavros]: Plugin ftp ignored
+[mavros_node-1] [INFO] [1783756922.659149739] [mavros.mavros]: Plugin geofence created
+[mavros_node-1] [INFO] [1783756922.659209345] [mavros.mavros]: Plugin geofence initialized
+[mavros_node-1] [INFO] [1783756922.670328466] [mavros.mavros]: Plugin gimbal_control created
+[mavros_node-1] [INFO] [1783756922.670397476] [mavros.mavros]: Plugin gimbal_control initialized
+[mavros_node-1] [INFO] [1783756922.681091338] [mavros.mavros]: Plugin global_position created
+[mavros_node-1] [INFO] [1783756922.681157938] [mavros.mavros]: Plugin global_position initialized
+[mavros_node-1] [INFO] [1783756922.686960910] [mavros.mavros]: Plugin gps_input created
+[mavros_node-1] [INFO] [1783756922.686996545] [mavros.mavros]: Plugin gps_input initialized
+[mavros_node-1] [INFO] [1783756922.694058434] [mavros.mavros]: Plugin gps_rtk created
+[mavros_node-1] [INFO] [1783756922.694110818] [mavros.mavros]: Plugin gps_rtk initialized
+[mavros_node-1] [INFO] [1783756922.700886464] [mavros.mavros]: Plugin gps_status created
+[mavros_node-1] [INFO] [1783756922.700928904] [mavros.mavros]: Plugin gps_status initialized
+[mavros_node-1] [INFO] [1783756922.707350746] [mavros.mavros]: Plugin guided_target created
+[mavros_node-1] [INFO] [1783756922.707390020] [mavros.mavros]: Plugin guided_target initialized
+[mavros_node-1] [INFO] [1783756922.707395957] [mavros.mavros]: Plugin hil ignored
+[mavros_node-1] [INFO] [1783756922.714875613] [mavros.mavros]: Plugin home_position created
+[mavros_node-1] [INFO] [1783756922.714914426] [mavros.mavros]: Plugin home_position initialized
+[mavros_node-1] [INFO] [1783756922.724270305] [mavros.mavros]: Plugin imu created
+[mavros_node-1] [INFO] [1783756922.724317533] [mavros.mavros]: Plugin imu initialized
+[mavros_node-1] [INFO] [1783756922.733862320] [mavros.mavros]: Plugin landing_target created
+[mavros_node-1] [INFO] [1783756922.733942944] [mavros.mavros]: Plugin landing_target initialized
+[mavros_node-1] [INFO] [1783756922.745439469] [mavros.mavros]: Plugin local_position created
+[mavros_node-1] [INFO] [1783756922.745482102] [mavros.mavros]: Plugin local_position initialized
+[mavros_node-1] [INFO] [1783756922.756767805] [mavros.mavros]: Plugin log_transfer created
+[mavros_node-1] [INFO] [1783756922.756806593] [mavros.mavros]: Plugin log_transfer initialized
+[mavros_node-1] [INFO] [1783756922.764744245] [mavros.mavros]: Plugin mag_calibration_status created
+[mavros_node-1] [INFO] [1783756922.764790336] [mavros.mavros]: Plugin mag_calibration_status initialized
+[mavros_node-1] [INFO] [1783756922.777520454] [mavros.mavros]: Plugin manual_control created
+[mavros_node-1] [INFO] [1783756922.777565319] [mavros.mavros]: Plugin manual_control initialized
+[mavros_node-1] [INFO] [1783756922.786567972] [mavros.mavros]: Plugin mocap_pose_estimate created
+[mavros_node-1] [INFO] [1783756922.786607122] [mavros.mavros]: Plugin mocap_pose_estimate initialized
+[mavros_node-1] [INFO] [1783756922.797635179] [mavros.mavros]: Plugin mount_control created
+[mavros_node-1] [INFO] [1783756922.797674852] [mavros.mavros]: Plugin mount_control initialized
+[mavros_node-1] [INFO] [1783756922.808790995] [mavros.mavros]: Plugin nav_controller_output created
+[mavros_node-1] [INFO] [1783756922.808860263] [mavros.mavros]: Plugin nav_controller_output initialized
+[mavros_node-1] [INFO] [1783756922.831621479] [mavros.mavros]: Plugin obstacle_distance created
+[mavros_node-1] [INFO] [1783756922.831662000] [mavros.mavros]: Plugin obstacle_distance initialized
+[mavros_node-1] [INFO] [1783756922.843426124] [mavros.mavros]: Plugin obstacle_distance_3d created
+[mavros_node-1] [INFO] [1783756922.843493918] [mavros.mavros]: Plugin obstacle_distance_3d initialized
+[mavros_node-1] [INFO] [1783756922.856140841] [mavros.mavros]: Plugin odometry created
+[mavros_node-1] [INFO] [1783756922.856199621] [mavros.mavros]: Plugin odometry initialized
+[mavros_node-1] [INFO] [1783756922.868460317] [mavros.mavros]: Plugin onboard_computer_status created
+[mavros_node-1] [INFO] [1783756922.868503144] [mavros.mavros]: Plugin onboard_computer_status initialized
+[mavros_node-1] [INFO] [1783756922.885098624] [mavros.mavros]: Plugin open_drone_id created
+[mavros_node-1] [INFO] [1783756922.885136258] [mavros.mavros]: Plugin open_drone_id initialized
+[mavros_node-1] [INFO] [1783756922.902714903] [mavros.mavros]: Plugin optical_flow created
+[mavros_node-1] [INFO] [1783756922.902759448] [mavros.mavros]: Plugin optical_flow initialized
+[mavros_node-1] [INFO] [1783756922.915846110] [mavros.mavros]: Plugin param created
+[mavros_node-1] [INFO] [1783756922.915890238] [mavros.mavros]: Plugin param initialized
+[mavros_node-1] [INFO] [1783756922.929091305] [mavros.mavros]: Plugin play_tune created
+[mavros_node-1] [INFO] [1783756922.929161935] [mavros.mavros]: Plugin play_tune initialized
+[mavros_node-1] [INFO] [1783756922.929171088] [mavros.mavros]: Plugin px4flow ignored
+[mavros_node-1] [INFO] [1783756922.954385553] [mavros.mavros]: Plugin rallypoint created
+[mavros_node-1] [INFO] [1783756922.954457874] [mavros.mavros]: Plugin rallypoint initialized
+[mavros_node-1] [INFO] [1783756922.971979280] [mavros.mavros]: Plugin rangefinder created
+[mavros_node-1] [INFO] [1783756922.972021228] [mavros.mavros]: Plugin rangefinder initialized
+[mavros_node-1] [INFO] [1783756922.992431239] [mavros.mavros]: Plugin rc_io created
+[mavros_node-1] [INFO] [1783756922.992498643] [mavros.mavros]: Plugin rc_io initialized
+[mavros_node-1] [INFO] [1783756923.005854451] [mavros.mavros]: Plugin setpoint_accel created
+[mavros_node-1] [INFO] [1783756923.005897003] [mavros.mavros]: Plugin setpoint_accel initialized
+[mavros_node-1] [INFO] [1783756923.021146728] [mavros.mavros]: Plugin setpoint_attitude created
+[mavros_node-1] [INFO] [1783756923.021238599] [mavros.mavros]: Plugin setpoint_attitude initialized
+[mavros_node-1] [INFO] [1783756923.043186241] [mavros.mavros]: Plugin setpoint_position created
+[mavros_node-1] [INFO] [1783756923.043251007] [mavros.mavros]: Plugin setpoint_position initialized
+[mavros_node-1] [INFO] [1783756923.064251703] [mavros.mavros]: Plugin setpoint_raw created
+[mavros_node-1] [INFO] [1783756923.064322406] [mavros.mavros]: Plugin setpoint_raw initialized
+[mavros_node-1] [INFO] [1783756923.093568740] [mavros.mavros]: Plugin setpoint_trajectory created
+[mavros_node-1] [INFO] [1783756923.093611153] [mavros.mavros]: Plugin setpoint_trajectory initialized
+[mavros_node-1] [INFO] [1783756923.116977420] [mavros.mavros]: Plugin setpoint_velocity created
+[mavros_node-1] [INFO] [1783756923.117027404] [mavros.mavros]: Plugin setpoint_velocity initialized
+[mavros_node-1] [INFO] [1783756923.133658635] [mavros.mavros]: Plugin sim_state created
+[mavros_node-1] [INFO] [1783756923.133705135] [mavros.mavros]: Plugin sim_state initialized
+[mavros_node-1] [INFO] [1783756923.177165596] [mavros.mavros]: Plugin sys_status created
+[mavros_node-1] [INFO] [1783756923.177262654] [mavros.mavros]: Plugin sys_status initialized
+[mavros_node-1] [INFO] [1783756923.203261612] [mavros.time]: TM: Timesync mode: MAVLINK
+[mavros_node-1] [INFO] [1783756923.208600875] [mavros.mavros]: Plugin sys_time created
+[mavros_node-1] [INFO] [1783756923.208668675] [mavros.mavros]: Plugin sys_time initialized
+[mavros_node-1] [INFO] [1783756923.242567263] [mavros.mavros]: Plugin tdr_radio created
+[mavros_node-1] [INFO] [1783756923.242642260] [mavros.mavros]: Plugin tdr_radio initialized
+[mavros_node-1] [INFO] [1783756923.269764067] [mavros.mavros]: Plugin terrain created
+[mavros_node-1] [INFO] [1783756923.269872943] [mavros.mavros]: Plugin terrain initialized
+[mavros_node-1] [INFO] [1783756923.295653366] [mavros.mavros]: Plugin trajectory created
+[mavros_node-1] [INFO] [1783756923.295709099] [mavros.mavros]: Plugin trajectory initialized
+[mavros_node-1] [INFO] [1783756923.319248447] [mavros.mavros]: Plugin tunnel created
+[mavros_node-1] [INFO] [1783756923.319345104] [mavros.mavros]: Plugin tunnel initialized
+[mavros_node-1] [INFO] [1783756923.339261506] [mavros.mavros]: Plugin vfr_hud created
+[mavros_node-1] [INFO] [1783756923.339313315] [mavros.mavros]: Plugin vfr_hud initialized
+[mavros_node-1] [INFO] [1783756923.339320859] [mavros.mavros]: Plugin vibration ignored
+[mavros_node-1] [INFO] [1783756923.361229523] [mavros.mavros]: Plugin vision_pose created
+[mavros_node-1] [INFO] [1783756923.361280402] [mavros.mavros]: Plugin vision_pose initialized
+[mavros_node-1] [INFO] [1783756923.386147568] [mavros.mavros]: Plugin vision_speed created
+[mavros_node-1] [INFO] [1783756923.386390745] [mavros.mavros]: Plugin vision_speed initialized
+[mavros_node-1] [INFO] [1783756923.415460268] [mavros.mavros]: Plugin waypoint created
+[mavros_node-1] [INFO] [1783756923.415528974] [mavros.mavros]: Plugin waypoint initialized
+[mavros_node-1] [INFO] [1783756923.415537377] [mavros.mavros]: Plugin wheel_odometry ignored
+[mavros_node-1] [INFO] [1783756923.435567583] [mavros.mavros]: Plugin wind_estimation created
+[mavros_node-1] [INFO] [1783756923.435660910] [mavros.mavros]: Plugin wind_estimation initialized
+[mavros_node-1] [INFO] [1783756923.438034655] [mavros.mavros]: Built-in SIMD instructions: SSE, SSE2
+[mavros_node-1] [INFO] [1783756923.438066230] [mavros.mavros]: Built-in MAVLink package version: 2026.6.6
+[mavros_node-1] [INFO] [1783756923.438074533] [mavros.mavros]: Known MAVLink dialects: common ardupilotmega ASLUAV AVSSUAS all csAirLink cubepilot development icarous loweheiser marsh matrixpilot paparazzi standard stemstudios storm32 uAvionix ualberta
+[mavros_node-1] [INFO] [1783756923.438078377] [mavros.mavros]: MAVROS UAS via /uas1 started. MY ID 1.191, TARGET ID 1.1
+[mavros_node-1] [INFO] [1783756923.504625458] [mavros.mavros_router]: link[1001] detected remote address 1.191
+[mavros_node-1] [WARN] [1783756924.547859492] [mavros.time]: TM: RTT too high for timesync: 1458.27 ms.
+[mavros_node-1] [WARN] [1783756924.548598008] [mavros.time]: TM: RTT too high for timesync: 1044.17 ms.
+[mavros_node-1] [WARN] [1783756924.550021410] [mavros.time]: TM: RTT too high for timesync: 745.52 ms.
+[mavros_node-1] [INFO] [1783756924.550682958] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.550717603] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756924.550815387] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.550864981] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756924.550968189] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.550988373] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756924.551079610] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.551099710] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756924.551155773] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.551172048] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756924.551230483] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756924.551244166] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [WARN] [1783756924.551676572] [mavros.time]: TM: RTT too high for timesync: 462.37 ms.
+[mavros_node-1] [WARN] [1783756924.551934213] [mavros.cmd]: CMD: Unexpected command 520, result 0
+[mavros_node-1] [WARN] [1783756924.553352612] [mavros.time]: TM: RTT too high for timesync: 163.94 ms.
+[mavros_node-1] [INFO] [1783756924.559935461] [mavros.mavros]: CON: Got HEARTBEAT, connected. FCU: ArduPilot
+[mavros_node-1] [INFO] [1783756924.560041729] [mavros.mission]: WP: detected enable_partial_push: 1
+[mavros_node-1] [INFO] [1783756924.560388635] [mavros.geofence]: GF: Using MISSION_ITEM_INT
+[mavros_node-1] [INFO] [1783756924.560424080] [mavros.rallypoint]: RP: Using MISSION_ITEM_INT
+[mavros_node-1] [INFO] [1783756924.560443079] [mavros.mission]: WP: Using MISSION_ITEM_INT
+[mavros_node-1] [INFO] [1783756924.560458349] [mavros.sys]: VER: 1.1: Capabilities         0x000000000000fbef
+[mavros_node-1] [INFO] [1783756924.560481994] [mavros.sys]: VER: 1.1: Flight software:     040603ff (12a6efea)
+[mavros_node-1] [INFO] [1783756924.560492541] [mavros.sys]: VER: 1.1: Middleware software: 00000000 (        )
+[mavros_node-1] [INFO] [1783756924.560501543] [mavros.sys]: VER: 1.1: OS software:         00000000 (        )
+[mavros_node-1] [INFO] [1783756924.560510904] [mavros.sys]: VER: 1.1: Board hardware:      00000000
+[mavros_node-1] [INFO] [1783756924.560519991] [mavros.sys]: VER: 1.1: VID/PID:             0000:0000
+[mavros_node-1] [INFO] [1783756924.560528816] [mavros.sys]: VER: 1.1: UID:                 0000000000000000
+[mavros_node-1] [INFO] [1783756924.560639815] [mavros.sys]: VER: 1.1: Capabilities         0x000000000000fbef
+[mavros_node-1] [INFO] [1783756924.560661216] [mavros.sys]: VER: 1.1: Flight software:     040603ff (12a6efea)
+[mavros_node-1] [INFO] [1783756924.560668975] [mavros.sys]: VER: 1.1: Middleware software: 00000000 (        )
+[mavros_node-1] [INFO] [1783756924.560673967] [mavros.sys]: VER: 1.1: OS software:         00000000 (        )
+[mavros_node-1] [INFO] [1783756924.560679923] [mavros.sys]: VER: 1.1: Board hardware:      00000000
+[mavros_node-1] [INFO] [1783756924.560685848] [mavros.sys]: VER: 1.1: VID/PID:             0000:0000
+[mavros_node-1] [INFO] [1783756924.560690265] [mavros.sys]: VER: 1.1: UID:                 0000000000000000
+[mavros_node-1] [INFO] [1783756924.562583554] [mavros.rc]: RC_CHANNELS message detected!
+[mavros_node-1] [INFO] [1783756924.562704006] [mavros.imu]: IMU: Raw IMU message used.
+[mavros_node-1] [WARN] [1783756924.563461680] [mavros.global_position]: GP: No GPS fix
+[mavros_node-1] [ERROR] [1783756924.659439475] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756924.659602601] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [WARN] [1783756924.659966315] [mavros.sys]: FCU: EKF3 IMU0 stopped aiding
+[mavros_node-1] [WARN] [1783756924.660106977] [mavros.sys]: FCU: EKF3 IMU0 stopped aiding
+[mavros_node-1] [WARN] [1783756924.660336627] [mavros.sys]: FCU: EKF3 IMU1 stopped aiding
+[mavros_node-1] [WARN] [1783756924.660401247] [mavros.sys]: FCU: EKF3 IMU1 stopped aiding
+[mavros_node-1] [WARN] [1783756925.802731367] [mavros.time]: TM: RTT too high for timesync: 1198.34 ms.
+[mavros_node-1] [WARN] [1783756925.804632840] [mavros.time]: TM: RTT too high for timesync: 900.10 ms.
+[mavros_node-1] [WARN] [1783756925.807083779] [mavros.time]: TM: RTT too high for timesync: 617.76 ms.
+[mavros_node-1] [WARN] [1783756925.808093570] [mavros.time]: TM: RTT too high for timesync: 316.69 ms.
+[mavros_node-1] [WARN] [1783756925.812116355] [mavros.time]: TM: RTT too high for timesync: 107.58 ms.
+[mavros_node-1] [INFO] [1783756926.257532683] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756926.257766547] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756926.288678246] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756926.288751073] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756926.876080629] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756926.876521166] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756927.280943735] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756927.281132009] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756927.303982130] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756927.304169933] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756928.044941521] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756928.045105169] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756928.061748565] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756928.061926395] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756928.085220859] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756928.085330246] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756928.348012468] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756928.348132804] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [INFO] [1783756928.630947292] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756928.631077640] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756928.660274296] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756928.660480226] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756929.301890214] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756929.302107995] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756929.332894932] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756929.333524441] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756929.468360570] [mavros.sys]: FCU: PreArm: Gyro 1 rate 714Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756929.468528352] [mavros.sys]: FCU: PreArm: Gyro 1 rate 714Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756929.468706663] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756929.468863375] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [INFO] [1783756929.553865274] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.553946203] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756929.554060474] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.554071710] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756929.572724963] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.572786521] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756929.572852083] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.572867851] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756929.572920760] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.572939546] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756929.572987892] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756929.573004370] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756930.439782342] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756930.439957822] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756930.473070857] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756930.473160236] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756930.780060302] [mavros.sys]: FCU: PreArm: Gyro 1 rate 699Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756930.780193921] [mavros.sys]: FCU: PreArm: Gyro 1 rate 699Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756930.780346572] [mavros.sys]: FCU: PreArm: Check mag field (xy diff:214>100)
+[mavros_node-1] [ERROR] [1783756930.780474281] [mavros.sys]: FCU: PreArm: Check mag field (xy diff:214>100)
+[mavros_node-1] [ERROR] [1783756930.780599713] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756930.780739667] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756930.781934050] [mavros.sys]: FCU: PreArm: Logging failed
+[mavros_node-1] [ERROR] [1783756930.782160392] [mavros.sys]: FCU: PreArm: Logging failed
+[mavros_node-1] [ERROR] [1783756930.898291232] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756930.898479571] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [INFO] [1783756931.233697974] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756931.233896984] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756931.261224587] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756931.261384544] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756931.392277183] [mavros.sys]: FCU: Arm: Gyro 1 rate 692Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.392438142] [mavros.sys]: FCU: Arm: Gyro 1 rate 692Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.393231227] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756931.393424471] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756931.393742421] [mavros.sys]: FCU: Arm: Gyro 1 rate 692Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.393846396] [mavros.sys]: FCU: Arm: Gyro 1 rate 692Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.395069547] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756931.395242873] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [INFO] [1783756931.877729852] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756931.877915364] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756931.901319706] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756931.901476074] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756931.949972603] [mavros.sys]: FCU: PreArm: Gyro 1 rate 686Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.950356914] [mavros.sys]: FCU: PreArm: Gyro 1 rate 686Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756931.950685633] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756931.950808124] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [INFO] [1783756932.910788416] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756932.911002524] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756932.932652023] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756932.932845721] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756933.137286758] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756933.137459269] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756933.137544979] [mavros.sys]: FCU: PreArm: Gyro 1 rate 672Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.137800061] [mavros.sys]: FCU: PreArm: Gyro 1 rate 672Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.137927671] [mavros.sys]: FCU: PreArm: Check mag field (xy diff:228>100)
+[mavros_node-1] [ERROR] [1783756933.138082352] [mavros.sys]: FCU: PreArm: Check mag field (xy diff:228>100)
+[mavros_node-1] [ERROR] [1783756933.138466000] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756933.138620257] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756933.139862970] [mavros.sys]: FCU: PreArm: Logging failed
+[mavros_node-1] [ERROR] [1783756933.140013314] [mavros.sys]: FCU: PreArm: Logging failed
+[mavros_node-1] [ERROR] [1783756933.420574648] [mavros.sys]: FCU: Arm: Gyro 1 rate 669Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.420682105] [mavros.sys]: FCU: Arm: Gyro 1 rate 669Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.421480209] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756933.421604446] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756933.421822680] [mavros.sys]: FCU: Arm: Gyro 1 rate 669Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.421892841] [mavros.sys]: FCU: Arm: Gyro 1 rate 669Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756933.422253088] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756933.422325459] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756933.452322520] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756933.452547305] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756933.472864063] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756933.473018861] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756934.295810386] [mavros.sys]: FCU: PreArm: Gyro 1 rate 659Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756934.295986159] [mavros.sys]: FCU: PreArm: Gyro 1 rate 659Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756934.296517274] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756934.296683734] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756934.363083627] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756934.363319813] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756934.384047225] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756934.384158745] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756934.556476612] [mavros.geofence]: GF: mission received
+[mavros_node-1] [INFO] [1783756934.556561332] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756934.556567295] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756934.560329264] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756934.560391545] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756934.560572809] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756934.560602223] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756934.561329237] [mavros.home_position]: HP: requesting home position
+[mavros_node-1] [INFO] [1783756934.568010962] [mavros.sys]: FCU: ArduCopter V4.6.3 (12a6efea)
+[mavros_node-1] [INFO] [1783756934.568214677] [mavros.sys]: FCU: ArduCopter V4.6.3 (12a6efea)
+[mavros_node-1] [INFO] [1783756934.568526884] [mavros.sys]: FCU: ee03a15c37c74324af3300070726329a
+[mavros_node-1] [INFO] [1783756934.568660450] [mavros.sys]: FCU: ee03a15c37c74324af3300070726329a
+[mavros_node-1] [INFO] [1783756934.569004984] [mavros.sys]: FCU: Frame: QUAD/X
+[mavros_node-1] [INFO] [1783756934.569128746] [mavros.sys]: FCU: Frame: QUAD/X
+[mavros_node-1] [WARN] [1783756934.571742629] [mavros.cmd]: CMD: Unexpected command 410, result 0
+[mavros_node-1] [INFO] [1783756934.592820302] [mavros.rallypoint]: RP: mission received
+[mavros_node-1] [INFO] [1783756934.593005630] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756934.593037030] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756934.593200092] [mavros.mission]: WP: mission received
+[mavros_node-1] [INFO] [1783756934.593333852] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756934.593359246] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [ERROR] [1783756935.434616115] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756935.434842040] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756935.443792189] [mavros.sys]: FCU: Arm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.443915195] [mavros.sys]: FCU: Arm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.444374265] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756935.444471057] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756935.444810761] [mavros.sys]: FCU: Arm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.444902712] [mavros.sys]: FCU: Arm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.445113389] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756935.445157430] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756935.452877672] [mavros.sys]: FCU: PreArm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.453106735] [mavros.sys]: FCU: PreArm: Gyro 1 rate 647Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756935.453276441] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756935.453391321] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756936.567684823] [mavros.sys]: FCU: PreArm: Gyro 1 rate 635Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756936.567851045] [mavros.sys]: FCU: PreArm: Gyro 1 rate 635Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756936.568644693] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756936.568884033] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756936.615968256] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756936.616173890] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756936.643460284] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756936.643614425] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756937.334720364] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756937.334903721] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756937.372221457] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756937.372335534] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756937.469146151] [mavros.sys]: FCU: Arm: Gyro 1 rate 626Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.469355801] [mavros.sys]: FCU: Arm: Gyro 1 rate 626Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.470841199] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756937.471075132] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756937.471154469] [mavros.sys]: FCU: Arm: Gyro 1 rate 626Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.471467116] [mavros.sys]: FCU: Arm: Gyro 1 rate 626Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.471750405] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756937.471879808] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756937.776405465] [mavros.sys]: FCU: PreArm: Gyro 1 rate 623Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.776531316] [mavros.sys]: FCU: PreArm: Gyro 1 rate 623Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756937.777252585] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756937.777357850] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756937.995164457] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756937.995295000] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756938.014489712] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756938.014663912] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756938.100767427] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756938.100983154] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [INFO] [1783756938.623581495] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756938.623746617] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756938.647841180] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756938.647983630] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756939.035819900] [mavros.sys]: FCU: PreArm: Gyro 1 rate 610Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.036037014] [mavros.sys]: FCU: PreArm: Gyro 1 rate 610Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.036156974] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756939.036251582] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756939.220470074] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756939.220634142] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756939.248107428] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756939.248322681] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756939.497935950] [mavros.sys]: FCU: Arm: Gyro 1 rate 605Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.498041686] [mavros.sys]: FCU: Arm: Gyro 1 rate 605Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.498449045] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756939.498571229] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756939.499000578] [mavros.sys]: FCU: Arm: Gyro 1 rate 605Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.499090243] [mavros.sys]: FCU: Arm: Gyro 1 rate 605Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756939.499660573] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756939.499794669] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [INFO] [1783756939.563778233] [mavros.geofence]: GF: mission received
+[mavros_node-1] [INFO] [1783756939.563934971] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.563960816] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.567286810] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.567339090] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.567470749] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.567486142] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.610419570] [mavros.mission]: WP: mission received
+[mavros_node-1] [INFO] [1783756939.610616507] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.610639805] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.611206441] [mavros.rallypoint]: RP: mission received
+[mavros_node-1] [INFO] [1783756939.611461205] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.611482736] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.613399843] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.613460691] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.613615230] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.613643719] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.617050629] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.617097470] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756939.617218711] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756939.617283993] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756940.045232686] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756940.045410636] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756940.069772999] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756940.069952678] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756940.235689834] [mavros.sys]: FCU: PreArm: Gyro 1 rate 598Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756940.235895878] [mavros.sys]: FCU: PreArm: Gyro 1 rate 598Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756940.236136424] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756940.236216591] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756940.937038903] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756940.937184121] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [INFO] [1783756940.963913840] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756940.964132446] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756940.982730497] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756940.982913137] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756941.399824929] [mavros.sys]: FCU: PreArm: Gyro 1 rate 586Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.400043673] [mavros.sys]: FCU: PreArm: Gyro 1 rate 586Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.400329837] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756941.400734791] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756941.499298343] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756941.499386786] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [ERROR] [1783756941.520409868] [mavros.sys]: FCU: Arm: Gyro 1 rate 585Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.520532546] [mavros.sys]: FCU: Arm: Gyro 1 rate 585Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.520609254] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756941.520726189] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756941.520832913] [mavros.sys]: FCU: Arm: Gyro 1 rate 585Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.520879628] [mavros.sys]: FCU: Arm: Gyro 1 rate 585Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756941.521370155] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756941.521492560] [mavros.sys]: FCU: Arm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756941.521568361] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756941.521829007] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756942.049609792] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756942.049764770] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756942.072053702] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756942.072381100] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756942.194437997] [mavros.time]: TM: Time jump detected. Resetting time synchroniser.
+[mavros_node-1] [ERROR] [1783756942.593101003] [mavros.sys]: FCU: PreArm: Gyro 1 rate 575Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756942.593386430] [mavros.sys]: FCU: PreArm: Gyro 1 rate 575Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756942.593888299] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [ERROR] [1783756942.594041561] [mavros.sys]: FCU: PreArm: GPS 1: Bad fix
+[mavros_node-1] [INFO] [1783756942.784795757] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756942.784943189] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756942.820019307] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756942.820308329] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756943.371799204] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756943.372004285] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756943.394767522] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756943.394914432] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [ERROR] [1783756943.480623272] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756943.480820223] [mavros.sys]: FCU: AP_Logger: stuck thread ()
+[mavros_node-1] [ERROR] [1783756943.545607770] [mavros.sys]: FCU: Arm: Gyro 1 rate 566Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.545788021] [mavros.sys]: FCU: Arm: Gyro 1 rate 566Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.545914417] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756943.546021662] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756943.546252866] [mavros.sys]: FCU: Arm: Gyro 1 rate 566Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.546411476] [mavros.sys]: FCU: Arm: Gyro 1 rate 566Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.546720364] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756943.546864385] [mavros.sys]: FCU: Arm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756943.761149975] [mavros.sys]: FCU: PreArm: Gyro 1 rate 564Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.761311880] [mavros.sys]: FCU: PreArm: Gyro 1 rate 564Hz < loop ratex1.8 720Hz
+[mavros_node-1] [ERROR] [1783756943.761494453] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [ERROR] [1783756943.761532567] [mavros.sys]: FCU: PreArm: GPS 1: not healthy
+[mavros_node-1] [INFO] [1783756944.299082084] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756944.299224461] [mavros.sys]: FCU: GPS 1: probing for u-blox at 230400 baud
+[mavros_node-1] [INFO] [1783756944.329951139] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756944.330075317] [mavros.sys]: FCU: GPS 1: detected u-blox
+[mavros_node-1] [INFO] [1783756944.579658688] [mavros.geofence]: GF: mission received
+[mavros_node-1] [INFO] [1783756944.579750048] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.579763274] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.579994260] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.580029982] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.580183585] [mavros.geofence]: GF: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.580218713] [mavros.geofence]: GF: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.633062523] [mavros.mission]: WP: mission received
+[mavros_node-1] [INFO] [1783756944.633218524] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.633239081] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.633300296] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.633319749] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.633421834] [mavros.mission]: WP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.633448486] [mavros.mission]: WP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.634154722] [mavros.rallypoint]: RP: mission received
+[mavros_node-1] [INFO] [1783756944.634484451] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.634502677] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.635588253] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.635621995] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] [INFO] [1783756944.635750800] [mavros.rallypoint]: RP: seems GCS requesting mission
+[mavros_node-1] [INFO] [1783756944.635773327] [mavros.rallypoint]: RP: scheduling pull after GCS is done
+[mavros_node-1] Error:   mavconn: tcp0: receive: Connection reset by peer
+[mavros_node-1]          at line 283 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: shutdown: Transport endpoint is not connected
+[mavros_node-1]          at line 194 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756945.864158141] [mavros.param]: PR: request param #0 timeout, retries left 2, and 1396 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756946.864728818] [mavros.param]: PR: request param #0 timeout, retries left 1, and 1396 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756947.865168200] [mavros.param]: PR: request param #0 timeout, retries left 0, and 1396 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756948.865612158] [mavros.param]: PR: request param #0 completely missing.
+[mavros_node-1] [WARN] [1783756948.865691766] [mavros.param]: PR: 1395 params still missing, trying to request next: #1
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756949.866239488] [mavros.param]: PR: request param #1 timeout, retries left 2, and 1395 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756950.564322229] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] [WARN] [1783756950.581914109] [mavros.geofence]: GF: timeout, retries left 2
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756950.634296856] [mavros.mission]: WP: timeout, retries left 2
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756950.636814165] [mavros.rallypoint]: RP: timeout, retries left 2
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756950.866919330] [mavros.param]: PR: request param #1 timeout, retries left 1, and 1395 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756951.583001121] [mavros.geofence]: GF: timeout, retries left 1
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756951.634541349] [mavros.mission]: WP: timeout, retries left 1
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756951.637686739] [mavros.rallypoint]: RP: timeout, retries left 1
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756951.867822955] [mavros.param]: PR: request param #1 timeout, retries left 0, and 1395 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [INFO] [1783756952.527057820] [mavros.mavros_router]: link[1000] trying to reconnect...
+[mavros_node-1] [ERROR] [1783756952.528462760] [mavros.mavros_router]: link[1000] reconnect failed: DeviceError:tcp:connect: Connection refused
+[mavros_node-1] [WARN] [1783756952.583767989] [mavros.geofence]: GF: timeout, retries left 0
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756952.634857934] [mavros.mission]: WP: timeout, retries left 0
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756952.639652934] [mavros.rallypoint]: RP: timeout, retries left 0
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756952.869237012] [mavros.param]: PR: request param #1 completely missing.
+[mavros_node-1] [WARN] [1783756952.869351317] [mavros.param]: PR: 1394 params still missing, trying to request next: #2
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756953.584468012] [mavros.geofence]: GF: timed out.
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756953.635366453] [mavros.mission]: WP: timed out.
+[mavros_node-1] [ERROR] [1783756953.640317400] [mavros.rallypoint]: RP: timed out.
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756953.870028638] [mavros.param]: PR: request param #2 timeout, retries left 2, and 1394 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756954.864167325] [mavros.mavros]: CON: Lost connection, HEARTBEAT timed out.
+[mavros_node-1] [WARN] [1783756954.871480950] [mavros.param]: PR: request param #2 timeout, retries left 1, and 1394 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756955.872591402] [mavros.param]: PR: request param #2 timeout, retries left 0, and 1394 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756956.873875841] [mavros.param]: PR: request param #2 completely missing.
+[mavros_node-1] [WARN] [1783756956.873989514] [mavros.param]: PR: 1393 params still missing, trying to request next: #3
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756957.614405657] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756957.874226242] [mavros.param]: PR: request param #3 timeout, retries left 2, and 1393 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756958.875377005] [mavros.param]: PR: request param #3 timeout, retries left 1, and 1393 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756959.875964444] [mavros.param]: PR: request param #3 timeout, retries left 0, and 1393 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756960.876583861] [mavros.param]: PR: request param #3 completely missing.
+[mavros_node-1] [WARN] [1783756960.876656991] [mavros.param]: PR: 1392 params still missing, trying to request next: #4
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756961.877055581] [mavros.param]: PR: request param #4 timeout, retries left 2, and 1392 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756962.877773551] [mavros.param]: PR: request param #4 timeout, retries left 1, and 1392 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756963.878377301] [mavros.param]: PR: request param #4 timeout, retries left 0, and 1392 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756964.664670000] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756964.878978173] [mavros.param]: PR: request param #4 completely missing.
+[mavros_node-1] [WARN] [1783756964.879090414] [mavros.param]: PR: 1391 params still missing, trying to request next: #5
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756965.880422960] [mavros.param]: PR: request param #5 timeout, retries left 2, and 1391 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756966.881217212] [mavros.param]: PR: request param #5 timeout, retries left 1, and 1391 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756967.882257957] [mavros.param]: PR: request param #5 timeout, retries left 0, and 1391 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756968.883811375] [mavros.param]: PR: request param #5 completely missing.
+[mavros_node-1] [WARN] [1783756968.883948075] [mavros.param]: PR: 1390 params still missing, trying to request next: #6
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756969.884357051] [mavros.param]: PR: request param #6 timeout, retries left 2, and 1390 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756970.884787262] [mavros.param]: PR: request param #6 timeout, retries left 1, and 1390 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756971.714880510] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756971.885452127] [mavros.param]: PR: request param #6 timeout, retries left 0, and 1390 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756972.886099446] [mavros.param]: PR: request param #6 completely missing.
+[mavros_node-1] [WARN] [1783756972.886193429] [mavros.param]: PR: 1389 params still missing, trying to request next: #7
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756973.886599482] [mavros.param]: PR: request param #7 timeout, retries left 2, and 1389 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756974.887630698] [mavros.param]: PR: request param #7 timeout, retries left 1, and 1389 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756975.888711631] [mavros.param]: PR: request param #7 timeout, retries left 0, and 1389 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756976.889723085] [mavros.param]: PR: request param #7 completely missing.
+[mavros_node-1] [WARN] [1783756976.889795744] [mavros.param]: PR: 1388 params still missing, trying to request next: #8
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756977.890827380] [mavros.param]: PR: request param #8 timeout, retries left 2, and 1388 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756978.764602835] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756978.891650577] [mavros.param]: PR: request param #8 timeout, retries left 1, and 1388 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756979.892215168] [mavros.param]: PR: request param #8 timeout, retries left 0, and 1388 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756980.893488605] [mavros.param]: PR: request param #8 completely missing.
+[mavros_node-1] [WARN] [1783756980.893616912] [mavros.param]: PR: 1387 params still missing, trying to request next: #9
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756981.893792694] [mavros.param]: PR: request param #9 timeout, retries left 2, and 1387 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [INFO] [1783756982.526741435] [mavros.mavros_router]: link[1000] trying to reconnect...
+[mavros_node-1] [ERROR] [1783756982.526927957] [mavros.mavros_router]: link[1000] reconnect failed: DeviceError:tcp:connect: Connection refused
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756982.894035585] [mavros.param]: PR: request param #9 timeout, retries left 1, and 1387 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756983.894471987] [mavros.param]: PR: request param #9 timeout, retries left 0, and 1387 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756984.895218640] [mavros.param]: PR: request param #9 completely missing.
+[mavros_node-1] [WARN] [1783756984.895322225] [mavros.param]: PR: 1386 params still missing, trying to request next: #10
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756985.815296913] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] [WARN] [1783756985.896003879] [mavros.param]: PR: request param #10 timeout, retries left 2, and 1386 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756986.896808647] [mavros.param]: PR: request param #10 timeout, retries left 1, and 1386 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756987.897397023] [mavros.param]: PR: request param #10 timeout, retries left 0, and 1386 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756988.898564764] [mavros.param]: PR: request param #10 completely missing.
+[mavros_node-1] [WARN] [1783756988.898646238] [mavros.param]: PR: 1385 params still missing, trying to request next: #11
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756989.899541338] [mavros.param]: PR: request param #11 timeout, retries left 2, and 1385 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756990.900119745] [mavros.param]: PR: request param #11 timeout, retries left 1, and 1385 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756991.900840656] [mavros.param]: PR: request param #11 timeout, retries left 0, and 1385 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756992.864333553] [mavros.cmd]: CMD: Command 400 -- ack timeout
+[mavros_node-1] [ERROR] [1783756992.901972361] [mavros.param]: PR: request param #11 completely missing.
+[mavros_node-1] [WARN] [1783756992.902089001] [mavros.param]: PR: 1384 params still missing, trying to request next: #12
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756993.903169767] [mavros.param]: PR: request param #12 timeout, retries left 2, and 1384 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756994.903988400] [mavros.param]: PR: request param #12 timeout, retries left 1, and 1384 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756995.905510525] [mavros.param]: PR: request param #12 timeout, retries left 0, and 1384 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [ERROR] [1783756996.906060455] [mavros.param]: PR: request param #12 completely missing.
+[mavros_node-1] [WARN] [1783756996.906214353] [mavros.param]: PR: 1383 params still missing, trying to request next: #13
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756997.907531699] [mavros.param]: PR: request param #13 timeout, retries left 2, and 1383 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756998.908993911] [mavros.param]: PR: request param #13 timeout, retries left 1, and 1383 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] [WARN] [1783756999.910523890] [mavros.param]: PR: request param #13 timeout, retries left 0, and 1383 params still missing
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
+[mavros_node-1] Error:   mavconn: tcp0: send: channel closed!
+[mavros_node-1]          at line 234 in ./src/tcp.cpp
