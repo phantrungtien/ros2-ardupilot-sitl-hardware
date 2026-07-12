@@ -224,14 +224,17 @@ source install/setup.bash
 
 ### Stop individual components:
 ```bash
-./launch/stop_mavros.sh  # Stop MAVROS only
-./launch/stop_sitl.sh    # Stop SITL only
+pkill -9 -x mavros_node                          # MAVROS only
+pkill -9 -if 'sim_vehicle|arducopter|mavproxy'   # SITL only
 ```
 
 ### Stop everything at once:
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 ```
+
+Gazebo and the mission/vision nodes are in that list too: killing only SITL and
+MAVROS leaves them running, holding UDP 14550 / 5600 and blocking the next run.
 
 ---
 

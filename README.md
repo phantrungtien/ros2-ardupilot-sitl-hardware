@@ -119,7 +119,7 @@ source install/setup.bash
 ros2 run simtofly_mavros_sitl mission_simple
 
 # When done, stop everything cleanly
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 ```
 
 **Watch your drone take off in the SITL map!**
@@ -173,7 +173,7 @@ The pure controller geometry lives in `circle_control.py` and is unit-tested
 **After SITL testing succeeds:**
 ```bash
 # 1. Stop SITL completely
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 
 # 2. Wire the Pixhawk 6C to the companion computer:
 #    TELEM3 (SERIAL4) UART -> companion GPIO UART (/dev/ttyAMA0 @ 921600)

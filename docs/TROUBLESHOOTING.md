@@ -102,7 +102,7 @@ sim_vehicle.py -v ArduCopter --map --console
 
 3. **Restart in order:**
    ```bash
-   ./launch/stop_all.sh
+   pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
    ./launch/start_sitl.sh      # Wait for "STABILIZE>"
    ./launch/start_mavros.sh    # Then start MAVROS
    ```

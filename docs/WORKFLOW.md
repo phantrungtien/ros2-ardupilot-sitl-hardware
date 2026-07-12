@@ -24,9 +24,16 @@ This framework supports **both simulation and real hardware** on the **same comp
 |--------|---------|
 | `./launch/start_sitl.sh` | Start ArduPilot SITL simulator |
 | `./launch/start_mavros.sh` | Connect MAVROS to SITL (UDP) |
-| `./launch/stop_sitl.sh` | Stop SITL only |
-| `./launch/stop_mavros.sh` | Stop MAVROS only |
-| `./launch/stop_all.sh` | **Stop both SITL and MAVROS cleanly** |
+
+To stop everything, kill the processes directly:
+
+```bash
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
+```
+
+That one line covers Gazebo, SITL, MAVROS and the mission/vision nodes. Ctrl+C
+in a window stops only that window's program; the pkill also clears strays left
+holding UDP 14550 / 5600, which is what blocks the next run.
 
 ### Real Hardware
 
@@ -83,7 +90,7 @@ python3 scripts/missions/mission_simple.py
 ```bash
 # Terminal 4 (or after Ctrl+C on mission)
 cd ~/ros2-ardupilot-sitl-hardware
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 ```
 
 **This ensures:**
@@ -109,7 +116,7 @@ cd ~/ros2-ardupilot-sitl-hardware
 
 **Ensure SITL is stopped:**
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 ```
 
 **Verify the UART device exists:**
@@ -167,13 +174,14 @@ python3 scripts/missions/mission_simple.py
 python3 scripts/missions/mission_simple.py  # Terminal 3
 
 # Stop cleanly
-./launch/stop_all.sh             # Terminal 4
+# Stop cleanly (Terminal 4)
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 ```
 
 **2. Switch to hardware:**
 ```bash
 # Verify SITL stopped
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 
 # Connect hardware
 ./launch/start_mavros_real.sh    # Terminal 1
@@ -208,7 +216,7 @@ python3 scripts/missions/mission_simple.py  # Terminal 3
 
 **Solution:**
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 # Wait 2 seconds
 ./launch/start_sitl.sh
 ```
@@ -221,7 +229,7 @@ python3 scripts/missions/mission_simple.py  # Terminal 3
 
 **Solution:**
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 
 # Verify nothing running
 ps aux | grep -E "sim_vehicle|mavros_node"
@@ -236,7 +244,7 @@ ps aux | grep -E "sim_vehicle|mavros_node"
 
 **Solution:**
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 # Ensure /dev/ttyAMA0 exists
 ls -l /dev/ttyAMA0
 ./launch/start_mavros_real.sh
@@ -272,7 +280,7 @@ ls -l /dev/ttyAMA0
 2. ✅ Verify mode changes work
 3. ✅ Check altitude holds correctly
 4. ✅ Test RTL behavior
-5. ✅ Use `stop_all.sh` for clean shutdowns
+5. ✅ Kill leftover processes (see the pkill line above) for clean shutdowns
 
 ### Hardware Testing
 
@@ -345,12 +353,12 @@ python3 scripts/missions/mission_simple.py
 ./launch/start_sitl.sh           # Terminal 1
 ./launch/start_mavros.sh          # Terminal 2
 python3 scripts/missions/mission_simple.py  # Terminal 3
-./launch/stop_all.sh              # When done
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'              # When done
 ```
 
 **Hardware Testing:**
 ```bash
-./launch/stop_all.sh              # Ensure SITL stopped
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'              # Ensure SITL stopped
 ./launch/start_mavros_real.sh     # Terminal 1 (answer prompts)
 python3 scripts/missions/mission_simple.py  # Terminal 2
 Ctrl+C                            # When done
@@ -358,7 +366,7 @@ Ctrl+C                            # When done
 
 **Emergency Stop:**
 ```bash
-./launch/stop_all.sh
+pkill -9 -if 'gz sim|gz-sim|sim_vehicle|arducopter|mavproxy|mavros_node|gst-launch|install/simtofly_'
 # Or
 pkill -9 mavros_node
 pkill -9 -f sim_vehicle

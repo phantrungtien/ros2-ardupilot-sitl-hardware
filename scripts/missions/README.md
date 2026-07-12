@@ -234,7 +234,7 @@ ros2 node list | grep mavros
 
 # Restart MAVROS if needed
 cd ~/ros2-ardupilot-sitl-hardware/launch
-./stop_mavros.sh
+pkill -9 -x mavros_node
 ./start_mavros.sh
 ```
 

@@ -224,8 +224,7 @@ minicom -D /dev/ttyAMA0 -b 921600
 ├── launch/
 │   ├── start_mavros.sh          ← For SITL
 │   ├── start_mavros_real.sh     ← For real hardware
-│   ├── start_sitl.sh
-│   └── stop_all.sh
+│   └── start_sitl.sh
 ```
 
 ### Start MAVROS for Real Hardware
@@ -556,8 +555,7 @@ ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: false}
 ├── launch/
 │   ├── start_sitl.sh                # Start simulation
 │   ├── start_mavros.sh              # MAVROS for SITL
-│   ├── start_mavros_real.sh         # MAVROS for real hardware
-│   └── stop_all.sh                  # Stop SITL + MAVROS
+│   └── start_mavros_real.sh         # MAVROS for real hardware
 └── docs/
     └── guides/
         └── REAL_HARDWARE_SETUP.md   # This file
