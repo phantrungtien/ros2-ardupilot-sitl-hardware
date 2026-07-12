@@ -96,10 +96,14 @@ BRIDGE_CMD = (
     'ros2 run ros_gz_bridge parameter_bridge '
     "'/d435i/depth/image_rect_raw@sensor_msgs/msg/Image[gz.msgs.Image'"
 )
+# apm.launch with the `param` plugin denied -- it aborts MAVROS on duplicate parameter
+# replies, which a half-speed sim produces at random (std::future_error: Promise already
+# satisfied). apm.launch hardcodes its plugin list, so we ship our own launch instead.
+# See mavros_apm.launch.py.
 MAVROS_CMD = (
-    'source /opt/ros/humble/setup.bash\n'
+    ROS_SETUP
     + WAIT_SITL +
-    'ros2 launch mavros apm.launch fcu_url:=udp://:14550@'
+    'ros2 launch simtofly_mavros_sitl mavros_apm.launch.py fcu_url:=udp://:14550@'
 )
 MISSION_CMD = ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_mavros_sitl mission_gates'
 # GATE_GUI=1 (and --gui) -> gate_detect opens its OpenCV overlay window.

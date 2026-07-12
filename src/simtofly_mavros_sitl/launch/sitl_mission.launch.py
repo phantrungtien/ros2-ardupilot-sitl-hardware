@@ -130,12 +130,15 @@ SITL_CMD = WAIT_GAZEBO + (
     '--model JSON --map --console --out=udp:127.0.0.1:14550'
 )
 
-# 3) MAVROS - official ArduPilot launch (apm_pluginlists.yaml + apm_config.yaml).
-#    Waits for SITL's master port first. apm.launch lives in /opt/ros (no overlay).
+# 3) MAVROS - apm.launch with the `param` plugin denied, because that plugin aborts
+#    MAVROS outright on duplicate parameter replies, which a half-speed sim produces at
+#    random (std::future_error: Promise already satisfied). apm.launch hardcodes its
+#    plugin list, so we ship our own launch instead. See mavros_apm.launch.py.
+#    Waits for SITL's master port first.
 MAVROS_CMD = (
-    'source /opt/ros/humble/setup.bash\n'
+    ROS_SETUP
     + WAIT_SITL +
-    'ros2 launch mavros apm.launch fcu_url:=udp://:14550@'
+    'ros2 launch simtofly_mavros_sitl mavros_apm.launch.py fcu_url:=udp://:14550@'
 )
 
 
