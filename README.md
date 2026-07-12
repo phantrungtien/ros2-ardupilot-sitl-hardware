@@ -104,8 +104,9 @@ Swap the mission for `mission_circle`, `mission_gates`, `trackinghuman` or
 everything else opens the runway.
 
 Requires Gazebo, the `ardupilot_gazebo` plugin, and the worlds/models repo at
-`~/gz_ws` — see [Fly Through a Gate](#fly-through-a-gate) for the one-time setup, or
-[SITL Setup](docs/guides/SITL_SETUP.md).
+`~/gz_ws` — see [Fly Through a Gate](#fly-through-a-gate) below for that one-time
+setup. (No Gazebo? [SITL Setup](docs/guides/SITL_SETUP.md) covers the headless path
+— Option B — which needs none of it.)
 
 **Option B — Manual, headless SITL (no Gazebo), three terminals:**
 
