@@ -21,9 +21,16 @@ timing. Each wait loop is BOUNDED (timeout) so a window never hangs forever
 silently -- on timeout it proceeds anyway and its program fails visibly in its
 own window (which is easy to read because the logs are not mixed).
 
+The world FOLLOWS the mission: mission_gates opens gates_course.sdf (from
+~/gz_ws/src/drone_vision, the world with the ring and the D435i-carrying iris) and
+also brings up the depth bridge gate_detect needs; everything else opens
+iris_runway.sdf (from ardupilot_gazebo). Both are resolved by bare filename off
+GZ_SIM_RESOURCE_PATH, and `world:=` still overrides.
+
 Usage:
   ros2 launch simtofly_mavros_sitl sitl_mission.launch.py
   ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=trackinghuman
+  ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_gates
 
 Notes:
   - Each window stays open after its process exits (`exec bash`) so logs remain
@@ -86,14 +93,33 @@ WAIT_MAVROS = (
 
 # ---- Step commands -------------------------------------------------------
 
-# 1) Gazebo - cd ~/gz_ws/src/ardupilot_gazebo && gz sim -v4 -r worlds/iris_runway.sdf
+# 1) Gazebo. The worlds now live in TWO repos: iris_runway.sdf still ships with
+#    ardupilot_gazebo, while gates_course.sdf (and the D435i / ring / iris models it
+#    pulls in) moved to ~/gz_ws/src/drone_vision. gz_ws/setup.bash is the one place
+#    that knows how to put both repos on the path, so source it rather than
+#    re-deriving GZ_SIM_RESOURCE_PATH here and drifting from it.
+#
+#    setup.bash covers ardupilot_gazebo/models + drone_vision/{models,worlds}, but NOT
+#    ardupilot_gazebo/worlds -- so add that, and then gz resolves EITHER world off the
+#    resource path by bare filename. (Verified: both `gz sim -r iris_runway.sdf` and
+#    `gz sim -r gates_course.sdf` load with no path prefix and no cd.)
 GAZEBO_CMD = (
-    'export GZ_VERSION=harmonic\n'
-    'export GZ_SIM_SYSTEM_PLUGIN_PATH=$HOME/gz_ws/src/ardupilot_gazebo/build\n'
+    'export GZ_VERSION=harmonic\n'          # setup.bash does not set this one
+    'source $HOME/gz_ws/setup.bash\n'
     'export GZ_SIM_RESOURCE_PATH='
-    '$HOME/gz_ws/src/ardupilot_gazebo/models:$HOME/gz_ws/src/ardupilot_gazebo/worlds\n'
-    'cd $HOME/gz_ws/src/ardupilot_gazebo\n'
-    'gz sim -v4 -r worlds/'   # world file name is appended (launch arg)
+    '$HOME/gz_ws/src/ardupilot_gazebo/worlds:$GZ_SIM_RESOURCE_PATH\n'
+    'gz sim -v4 -r '          # world file name is appended (launch arg)
+)
+
+# 3b) Depth bridge - the D435i depth stream into ROS. ONLY for mission_gates:
+#     gate_detect ranges the ring off depth, and without this it silently falls back
+#     to its mono estimate (which reads ~15 mm short). Colour needs no bridge -- it
+#     still arrives as H264/RTP on UDP 5600 via GstCameraPlugin.
+BRIDGE_CMD = (
+    'source /opt/ros/humble/setup.bash\n'
+    + WAIT_GAZEBO +
+    'ros2 run ros_gz_bridge parameter_bridge '
+    "'/d435i/depth/image_rect_raw@sensor_msgs/msg/Image[gz.msgs.Image'"
 )
 
 # 2) ArduPilot SITL bound to Gazebo (absolute sim_vehicle.py path -> no PATH dep).
@@ -137,9 +163,11 @@ def generate_launch_description():
     vision_on = IfCondition(
         PythonExpression(["'", mission, "' == 'trackinghuman'"]))
 
-    # The gates mission is camera-driven too: gate_detect reads the gimbal
-    # stream and publishes /gate/obs, which mission_gates flies through.
-    gate_vision_on = IfCondition(
+    # The gates mission is camera-driven too: gate_detect reads the D435i colour
+    # stream, ranges the ring off the D435i depth stream, and publishes /gate/obs,
+    # which mission_gates flies through. Gates both its vision window and its depth
+    # bridge -- the bridge is useless to every other mission.
+    gates_on = IfCondition(
         PythonExpression(["'", mission, "' == 'mission_gates'"]))
 
     return LaunchDescription([
@@ -149,11 +177,18 @@ def generate_launch_description():
             description='Mission executable: mission_simple | mission_circle | '
                         'mission_gates | trackinghuman | verify_frame',
         ),
+        # The world follows the mission unless you say otherwise: mission_gates only
+        # makes sense over gates_course.sdf (it is the world with the ring in it), and
+        # every other mission wants the runway. Still overridable -- pass world:= to
+        # fly any mission over any world.
         DeclareLaunchArgument(
             'world',
-            default_value='iris_runway.sdf',
-            description='Gazebo world under worlds/: iris_runway.sdf | '
-                        'gates_course.sdf (fly the rings with mission_gates)',
+            default_value=PythonExpression(
+                ["'gates_course.sdf' if '", mission,
+                 "' == 'mission_gates' else 'iris_runway.sdf'"]),
+            description='Gazebo world, by bare filename (resolved off '
+                        'GZ_SIM_RESOURCE_PATH): iris_runway.sdf | gates_course.sdf. '
+                        'Defaults to gates_course.sdf when mission:=mission_gates.',
         ),
 
         # All windows open at once. Ordering is enforced by the wait-loops
@@ -177,6 +212,11 @@ def generate_launch_description():
             condition=vision_on,
         ),
 
+        # D435i depth -> ROS. Opens ONLY when mission == mission_gates, and gate_detect
+        # is useless without it: it would keep running, but on its mono ring-size
+        # estimate instead of the depth it was rebuilt around.
+        gnome_term('DepthBridge', BRIDGE_CMD, condition=gates_on),
+
         # Gate detector (orange-ring ellipse) -> publishes /gate/obs. Opens
         # ONLY when mission == mission_gates. It enables the camera stream
         # itself (gz topic) and reads it via gst-launch, so it must start
@@ -184,6 +224,6 @@ def generate_launch_description():
         gnome_term(
             'GateVision',
             ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_vision gate_detect',
-            condition=gate_vision_on,
+            condition=gates_on,
         ),
     ])

@@ -4,24 +4,37 @@
 Brings up, each in its OWN gnome-terminal window (so logs stay separate) and
 gated by READINESS not timers:
 
-  1. Gazebo      - gz sim with worlds/gates_course.sdf (the ring + gimbal cam)
+  1. Gazebo      - gz sim with drone_vision/worlds/gates_course.sdf: the iris
+                   carrying a RealSense D435i on its nose, and one orange ring
   2. SITL        - ArduCopter bound to Gazebo (waits for the FDM port 9002)
-  3. MAVROS      - waits for SITL's master port (TCP 5760)
-  4. Controller  - mission_gates (waits for /mavros/state connected)
-  5. GateVision  - gate_detect WITH its GUI window (--gui): the live camera
-                   feed with the detected ring/ellipse overlay. It also does
-                   the detection and publishes /gate/obs that (4) flies by.
+  3. DepthBridge - ros_gz_bridge: the D435i depth image -> ROS, which is what
+                   gate_detect ranges the ring with
+  4. MAVROS      - waits for SITL's master port (TCP 5760)
+  5. Controller  - mission_gates (waits for /mavros/state connected)
+  6. GateVision  - gate_detect WITH its GUI window (--gui): the live colour feed
+                   with the detected ring/ellipse overlay. It publishes the
+                   /gate/obs that (5) flies by.
 
-This is the gates-specific sibling of sitl_mission.launch.py, with the vision
-GUI turned on. Run it from a DESKTOP terminal (gnome-terminal needs a real
-session; it will not spawn from a headless/non-interactive shell).
+The two camera streams reach us by different routes, which is why (3) exists at
+all: COLOUR still arrives as H264/RTP on UDP 5600 (the colour sensor carries
+ardupilot_gazebo's GstCameraPlugin), so gate_detect reads it with gst-launch and
+needs no bridge. DEPTH is a plain Gazebo topic with no such plugin, so it has to
+be bridged into ROS.
+
+This is the gates-specific sibling of sitl_mission.launch.py. Both now fly the gates:
+`sitl_mission.launch.py mission:=mission_gates` picks gates_course.sdf and the depth
+bridge on its own. The only thing you get HERE and not there is the vision GUI --
+gate_detect runs with --gui, so you can watch the ellipse it fits on the ring.
+
+Run it from a DESKTOP terminal (gnome-terminal needs a real session; it will not
+spawn from a headless/non-interactive shell).
 
 Usage:
     ros2 launch simtofly_mavros_sitl gates_mission.launch.py
 
-Requirements (already on this machine): ArduPilot at ~/ardupilot,
-ardupilot_gazebo built at ~/gz_ws/src/ardupilot_gazebo/build, gz + gnome-
-terminal + ss + timeout, and the workspace built (colcon build).
+Requirements (already on this machine): ArduPilot at ~/ardupilot, the gz_ws at
+~/gz_ws with ardupilot_gazebo built and drone_vision checked out, ros_gz_bridge,
+gz + gnome-terminal + ss + timeout, and the workspace built (colcon build).
 """
 
 from launch import LaunchDescription
@@ -59,18 +72,29 @@ WAIT_MAVROS = (
 )
 
 # ---- Step commands -------------------------------------------------------
+
+# The models live in TWO repos: gates_course.sdf and the D435i/ring/iris models in
+# drone_vision, iris_with_standoffs and ArduPilotPlugin.so in ardupilot_gazebo.
+# gz_ws/setup.bash is the single place that knows how to put both on the path --
+# so source it rather than re-deriving GZ_SIM_RESOURCE_PATH here and drifting.
 GAZEBO_CMD = (
-    'export GZ_VERSION=harmonic\n'
-    'export GZ_SIM_SYSTEM_PLUGIN_PATH=$HOME/gz_ws/src/ardupilot_gazebo/build\n'
-    'export GZ_SIM_RESOURCE_PATH='
-    '$HOME/gz_ws/src/ardupilot_gazebo/models:$HOME/gz_ws/src/ardupilot_gazebo/worlds\n'
-    'cd $HOME/gz_ws/src/ardupilot_gazebo\n'
-    'gz sim -v4 -r worlds/gates_course.sdf'
+    'export GZ_VERSION=harmonic\n'          # setup.bash does not set this one
+    'source $HOME/gz_ws/setup.bash\n'
+    'gz sim -v4 -r $HOME/gz_ws/src/drone_vision/worlds/gates_course.sdf'
 )
 SITL_CMD = WAIT_GAZEBO + (
     'cd $HOME/ardupilot/ArduCopter\n'
     '$HOME/ardupilot/Tools/autotest/sim_vehicle.py -v ArduCopter -f gazebo-iris '
     '--model JSON --map --console --out=udp:127.0.0.1:14550'
+)
+# Depth only. camera_info is NOT bridged: gate_detect derives the intrinsics from
+# the same <horizontal_fov> the SDF declares, so there is one source of truth and
+# nothing to keep in sync at runtime.
+BRIDGE_CMD = (
+    'source /opt/ros/humble/setup.bash\n'
+    + WAIT_GAZEBO +
+    'ros2 run ros_gz_bridge parameter_bridge '
+    "'/d435i/depth/image_rect_raw@sensor_msgs/msg/Image[gz.msgs.Image'"
 )
 MAVROS_CMD = (
     'source /opt/ros/humble/setup.bash\n'
@@ -99,6 +123,7 @@ def generate_launch_description():
     return LaunchDescription([
         gnome_term('Gazebo', GAZEBO_CMD),
         gnome_term('SITL', SITL_CMD),
+        gnome_term('DepthBridge', BRIDGE_CMD),
         gnome_term('MAVROS', MAVROS_CMD),
         gnome_term('Mission', MISSION_CMD),
         gnome_term('GateVision', VISION_CMD),
