@@ -99,8 +99,12 @@ dependency, not a timer):
 ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_simple
 ```
 
-Swap the mission for `mission_circle`, `trackinghuman` or `verify_frame`.
-Requires Gazebo + the `ardupilot_gazebo` plugin — see
+Swap the mission for `mission_circle`, `mission_gates`, `trackinghuman` or
+`verify_frame`. The world follows the mission: `mission_gates` opens the gate course,
+everything else opens the runway.
+
+Requires Gazebo, the `ardupilot_gazebo` plugin, and the worlds/models repo at
+`~/gz_ws` — see [Fly Through a Gate](#fly-through-a-gate) for the one-time setup, or
 [SITL Setup](docs/guides/SITL_SETUP.md).
 
 **Option B — Manual, headless SITL (no Gazebo), three terminals:**
@@ -168,6 +172,96 @@ The pure controller geometry lives in `circle_control.py` and is unit-tested
 
 ---
 
+### Fly Through a Gate
+
+`mission_gates` flies the drone through a racing ring using **only the onboard
+camera** — colour to find the ring, **depth to range it**. It is never told where the
+gate is: it finds it, ranges it, and flies through it.
+
+Two halves, split across two packages:
+
+| Half | Node | Does |
+|------|------|------|
+| **Vision** | `simtofly_vision/gate_detect` | Finds the orange ring (HSV → `cv2.fitEllipse`), **ranges it with the D435i depth stream**, publishes `/gate/obs` |
+| **Control** | `simtofly_mavros_sitl/mission_gates` | Reconstructs where the ring is *in metres*, flies through it |
+
+#### 1. Get the Gazebo world and models
+
+The drone, the gate and the world live in a **separate repo** — an ArduPilot Iris
+carrying a nose-mounted **Intel RealSense D435i** (colour + depth + stereo IR + IMU),
+a racing ring, and the course world:
+
+**→ [phantrungtien/gazebo_ardupilot_depth_camera](https://github.com/phantrungtien/gazebo_ardupilot_depth_camera)**
+
+```bash
+# The launch files expect it at ~/gz_ws — clone it there.
+git clone https://github.com/phantrungtien/gazebo_ardupilot_depth_camera.git ~/gz_ws
+cd ~/gz_ws
+
+# ArduPilot's plugin is kept as a pristine clone (gitignored, never modified)
+git clone https://github.com/ArduPilot/ardupilot_gazebo src/ardupilot_gazebo
+cd src/ardupilot_gazebo && mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo && make -j4
+```
+
+`~/gz_ws/setup.bash` is the single place that puts **both** repos on
+`GZ_SIM_RESOURCE_PATH`; the launch files here source it, so you never set those
+paths by hand. See that repo's README for the camera's intrinsics and for what the
+simulator does *not* give you (depth noise, min-Z blind zone, frame conventions).
+
+#### 2. Fly it
+
+```bash
+colcon build --packages-select simtofly_vision simtofly_mavros_sitl
+source install/setup.bash
+
+# 6 windows, and gate_detect opens its GUI so you can watch the ellipse it fits
+ros2 launch simtofly_mavros_sitl gates_mission.launch.py
+
+# or through the shared launch — same thing, no vision GUI
+ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_gates
+```
+
+Both bring up the `ros_gz_bridge` that carries the depth image into ROS. Colour
+needs no bridge — it still arrives as H.264/RTP on UDP 5600.
+
+#### 3. What makes it hard: a 50 mm margin
+
+The ring's clear opening is **0.371 m** and the drone is **0.321 m** across the prop
+tips, and the ring **has collision** — so there are **50 mm** to spend, and spending
+them is a crash. Three biases each exceed that budget on their own:
+
+| Bias | Size | vs. the 50 mm |
+|------|-----:|--------------:|
+| A tolerance of 0.15 in *normalised pixels*, at commit range | ~154 mm | **3×** |
+| The colour camera sits left of the drone's centreline | 32.5 mm | **65%** |
+| 5° of nose-down pitch (the camera is welded to the airframe) | 123 mm | **2.5×** |
+
+So the controller never servos pixels to zero. It reconstructs the ring's position in
+**metres in the body frame** (where the camera offset lives), then rotates it into ENU
+with the drone's **attitude quaternion** (where the pitch bias lives). Both biases
+cancel by construction, and every threshold in the file is a real distance you can
+compare against the 50 mm.
+
+**The ring also goes blind before you reach it.** The detector fits an ellipse to the
+ring's outer contour, so once the ring outgrows the frame that contour is cut and the
+ring stops existing — at full size, dead ahead. The colour camera's *vertical*
+half-FOV binds, so this happens below `0.491 / tan(21.25°) = 1.26 m`. The mission
+therefore commits **while the ring is still whole**, and flies the last stretch on a
+frozen world point off `/mavros/local_position` rather than on pixels.
+
+Both halves have an offline self-check that needs no simulator:
+
+```bash
+python3 src/simtofly_vision/simtofly_vision/gate_detect.py --selfcheck
+python3 src/simtofly_mavros_sitl/simtofly_mavros_sitl/mission_gates.py --selfcheck
+```
+
+> **SITL-verified:** the drone finds the ring, closes on it, commits, flies clean
+> through the hole without touching it, then RTLs.
+
+---
+
 ### Deploy to Real Hardware
 
 **After SITL testing succeeds:**
@@ -212,15 +306,37 @@ See **[WORKFLOW.md](docs/WORKFLOW.md)** for:
 │   │   │   ├── circle_control.py         # pure circle geometry (no ROS, unit-tested)
 │   │   │   ├── mission_simple.py         # takeoff -> forward -> RTL
 │   │   │   ├── mission_circle.py         # velocity-based circular flight
+│   │   │   ├── mission_gates.py          # fly through a ring, by camera alone
 │   │   │   ├── trackinghuman.py          # vision-driven human follow
 │   │   │   └── verify_frame.py           # ENU/yaw frame-convention probe
 │   │   ├── launch/sitl_mission.launch.py # Gazebo + SITL + MAVROS + mission (all-in-one)
+│   │   ├── launch/gates_mission.launch.py# same, gates-only, with the vision GUI on
 │   │   └── test/test_circle_control.py   # unit tests for circle geometry
+│   ├── simtofly_vision/                  # Vision nodes (publish what the missions fly by)
+│   │   └── simtofly_vision/
+│   │       ├── gate_detect.py            # ring detect + D435i depth ranging -> /gate/obs
+│   │       └── person_follow_reid.py     # YOLO + OSNet ReID -> /follow/*
 │   └── simtofly_mavros_real/             # Real-hardware MAVROS launch (Pixhawk 6C)
 ├── scripts/missions/                     # Standalone copies (run with python3)
-├── launch/                               # Helper shell scripts (start/stop SITL & MAVROS)
+├── launch/                               # Helper shell scripts (start SITL & MAVROS)
 ├── docs/                                 # Installation, workflow, hardware docs
 └── README.md                             # You are here
+```
+
+The **Gazebo worlds and models are not in this repo** — the D435i-carrying Iris, the
+gate ring and the course world live in
+[gazebo_ardupilot_depth_camera](https://github.com/phantrungtien/gazebo_ardupilot_depth_camera),
+cloned to `~/gz_ws`:
+
+```
+~/gz_ws/
+├── setup.bash                            # puts BOTH repos on GZ_SIM_RESOURCE_PATH
+├── src/drone_vision/                     # the models and world (this is the repo)
+│   ├── models/realsense_d435i/           # colour + depth + stereo IR + IMU
+│   ├── models/iris_with_d435i/           # iris + the camera, nose-mounted
+│   ├── models/gate_ring/                 # the racing ring
+│   └── worlds/gates_course.sdf           # the course
+└── src/ardupilot_gazebo/                 # pristine upstream clone, gitignored
 ```
 
 ---
