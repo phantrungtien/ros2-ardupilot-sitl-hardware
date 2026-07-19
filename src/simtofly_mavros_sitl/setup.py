@@ -7,7 +7,7 @@ package_name = 'simtofly_mavros_sitl'
 setup(
     name=package_name,
     version='1.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=find_packages(),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -23,11 +23,6 @@ setup(
     maintainer_email='phantrungtien1034@gmail.com',
     description='MAVROS configuration for ArduPilot SITL simulation with ROS2 Humble',
     license='Apache-2.0',
-    extras_require={
-        'test': [
-            'pytest',
-        ],
-    },
     entry_points={
         'console_scripts': [
             'mission_simple = simtofly_mavros_sitl.mission_simple:main',

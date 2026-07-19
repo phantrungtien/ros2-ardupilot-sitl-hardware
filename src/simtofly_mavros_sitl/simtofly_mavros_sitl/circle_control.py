@@ -156,3 +156,96 @@ def circle_setpoint(pcur, z, circle, params, acc_angle, phi_prev):
     acc_angle = acc_angle + wrap_to_pi(phi - phi_prev)
     done = abs(acc_angle) >= 2.0 * math.pi * params.laps
     return vx, vy, vz, yaw, acc_angle, phi, done
+
+
+# =========================================================================
+# self-check -- pure geometry, no ROS:  python3 circle_control.py --selfcheck
+#
+# These twelve checks were a pytest file under test/. They moved here because
+# they were the only pytest in the workspace: running them needed
+# PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and a PYTHONPATH, while every other module
+# answers --selfcheck with plain python3. Same assertions, one convention.
+# =========================================================================
+def _selfcheck():
+    def close(a, b, tol=1e-9):
+        return math.isclose(a, b, abs_tol=tol)
+
+    # the start point is exactly ON the circle, so t=0 has no error spike
+    p = CircleParams(radius=5.0, direction=1.0)
+    c = make_circle((10.0, 20.0), heading=0.0, params=p)
+    assert close(c.r_eff, 5.0)
+    assert close(c.cx + c.r_eff * math.cos(c.phi0), 10.0)
+    assert close(c.cy + c.r_eff * math.sin(c.phi0), 20.0)
+
+    # the first feedforward points along `heading` for ANY heading, so the
+    # drone curves into the circle instead of jumping sideways
+    p = CircleParams(radius=5.0, speed=2.0, direction=1.0)
+    for heading in (0.0, 0.7, -1.2, math.pi / 2):
+        c = make_circle((0.0, 0.0), heading=heading, params=p)
+        vx, vy, _vz, yaw, _a, _phi, _done = circle_setpoint(
+            (0.0, 0.0), 0.0, c, p, acc_angle=0.0, phi_prev=c.phi0)
+        assert close(math.atan2(vy, vx), heading, 1e-6), heading
+        assert close(yaw, heading, 1e-6), heading
+
+    # tangent: reversing direction flips it, and it is always perpendicular
+    # to the radial
+    assert tuple(round(v, 12) for v in tangent_unit(1.0, 0.0, 1.0)) == (0.0, 1.0)
+    assert tuple(round(v, 12) for v in tangent_unit(1.0, 0.0, -1.0)) == (0.0, -1.0)
+    tx, ty = tangent_unit(0.6, 0.8, 1.0)
+    assert close(0.6 * tx + 0.8 * ty, 0.0)
+
+    # speed=0 isolates the radial term: outside pulls in, inside pushes out
+    p = CircleParams(speed=0.0, kp_r=1.0, direction=1.0, vmax=100.0)
+    c = Circle(cx=0.0, cy=0.0, r_eff=5.0, phi0=0.0)
+    vx, vy, *_ = circle_setpoint((6.0, 0.0), 0.0, c, p, 0.0, 0.0)
+    assert vx < 0.0 and close(vy, 0.0)
+    vx, *_ = circle_setpoint((4.0, 0.0), 0.0, c, p, 0.0, 0.0)
+    assert vx > 0.0
+
+    # clamping keeps the direction and leaves anything under the limit alone
+    vx, vy = clamp_magnitude(30.0, 40.0, 5.0)          # |v| 50 -> 5
+    assert close(math.hypot(vx, vy), 5.0) and close(vy / vx, 40.0 / 30.0)
+    assert clamp_magnitude(1.0, 2.0, 5.0) == (1.0, 2.0)
+
+    # wrap_to_pi: whole turns cancel, and the result never leaves [-pi, pi]
+    assert close(wrap_to_pi(0.5), 0.5)
+    assert close(wrap_to_pi(2 * math.pi + 0.5), 0.5)
+    assert close(wrap_to_pi(-2 * math.pi - 0.5), -0.5)
+    assert close(abs(wrap_to_pi(3 * math.pi)), math.pi)
+    for a in (-10.0, -1.0, 0.0, 1.0, 7.3, 100.0):
+        assert -math.pi - 1e-9 <= wrap_to_pi(a) <= math.pi + 1e-9, a
+
+    # altitude hold is clamped at vz_max but proportional below it
+    p = CircleParams(altitude=10.0, kp_z=0.5, vz_max=1.0, speed=0.0,
+                     kp_r=0.0, vmax=100.0)
+    c = Circle(cx=0.0, cy=0.0, r_eff=5.0, phi0=0.0)
+    assert close(circle_setpoint((5.0, 0.0), 2.0, c, p, 0.0, 0.0)[2], 1.0)
+    assert close(circle_setpoint((5.0, 0.0), 9.0, c, p, 0.0, 0.0)[2], 0.5)
+
+    # walk the circle in 0.5 deg steps and integrate the REAL swept angle:
+    # `done` must fire at two full laps, not one step early or late
+    p = CircleParams(radius=5.0, speed=2.0, direction=1.0, laps=2.0, kp_r=0.0)
+    c = Circle(cx=0.0, cy=0.0, r_eff=5.0, phi0=0.0)
+    acc, phi_prev, done, steps = 0.0, 0.0, False, 0
+    while not done and steps < 5000:
+        steps += 1
+        ang = math.radians(0.5) * steps
+        *_, acc, phi_prev, done = circle_setpoint(
+            (5.0 * math.cos(ang), 5.0 * math.sin(ang)), 0.0, c, p, acc, phi_prev)
+    assert done, 'khong bao gio bao xong 2 vong'
+    assert close(abs(acc), 4.0 * math.pi, math.radians(1.0)), acc
+
+    # at the centre the radial is undefined, so hold still rather than guess
+    p = CircleParams(radius=5.0, speed=2.0)
+    c = make_circle((0.0, 0.0), 0.0, p)
+    vx, vy, _vz, yaw, _a, _phi, done = circle_setpoint(
+        (c.cx, c.cy), 0.0, c, p, 0.0, 0.0)
+    assert (vx, vy) == (0.0, 0.0) and yaw is None and not done
+
+    print('circle_control selfcheck OK (12 kiem tra hinh hoc)')
+
+
+if __name__ == '__main__':
+    import sys
+    if '--selfcheck' in sys.argv:
+        _selfcheck()
