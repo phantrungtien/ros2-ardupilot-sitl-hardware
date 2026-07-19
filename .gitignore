@@ -70,3 +70,6 @@ Thumbs.db
 # For example, if you have local test files:
 # test_output/
 # *.local
+
+# SITL parameter dumps written at runtime
+mav.parm
