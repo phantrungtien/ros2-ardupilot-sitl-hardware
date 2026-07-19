@@ -663,6 +663,19 @@ def _build_node():
                 self.get_logger().info(
                     'quet tang {}/{} xong o z={:.1f} m'.format(
                         lvl + 1, len(SCAN_LEVELS), goal[2]))
+            # Come back down to where the sweep started. Climbing was for
+            # LOOKING; leaving the drone parked at the top level is a different
+            # thing entirely, and it broke the ordinary course: 3.2 m above the
+            # first gate's approach, build_segments could not make a single
+            # feasible segment, N5 held, and the gate died on its 90 s timeout.
+            yaw = self.heading_enu()
+            end = time.time() + SCAN_CLIMB_S * len(SCAN_LEVELS)
+            while rclpy.ok() and time.time() < end:
+                self._publish(base, np.zeros(3), np.zeros(3), yaw)
+                rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
+                if abs(self._xyz()[2] - base[2]) < 0.2:
+                    break
+            self.get_logger().info('quet xong, ve lai z={:.1f} m'.format(base[2]))
             self.hold = self._xyz()
             self.hold_yaw = self.heading_enu()
             self.cmd_p = self.hold.copy()
