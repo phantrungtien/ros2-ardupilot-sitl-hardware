@@ -92,11 +92,22 @@ DEPTH_MIN = 0.195                    # m
 DEPTH_MAX = 10.0                     # m (SDF <far>)
 
 # ----- orange ring HSV band (OpenCV H is 0..180) -----
+# The upper hue was 25 and that was too tight. The ring's material is
+# rgb(1, 0.45, 0) with an emissive term, so how yellow it RENDERS depends on how
+# it is lit: side-lit it sits around H 20 and passed, but fully lit -- sun behind
+# the camera -- it saturates to H 27 with S=V=255 and fell straight out of the
+# band. Measured on a frame where the ring fills the middle of the image: 15220
+# bright ring pixels, only 3350 inside the old band, all of them shaded fringe.
+# The contour was then a broken arc rather than an annulus, so RETR_CCOMP found
+# no hole and fitEllipse never ran. A whole gate was invisible for want of two
+# hue counts, and it failed SILENTLY -- the log just said "no gate".
+# 32 admits the lit ring; 40 was measured to add nothing at all (zero pixels
+# between 33 and 40 pass S/V), so the grass is nowhere near this band.
 # Ring material rgb(1, 0.45, 0), emissive -> bright orange. CALIBRATE if the mask
 # misses the ring (widen the band / raise MIN_AREA).
 # ponytail: sim-tuning knob, expect to nudge on the first live run.
 ORANGE_LO = np.array((3, 80, 80), np.uint8)
-ORANGE_HI = np.array((25, 255, 255), np.uint8)
+ORANGE_HI = np.array((32, 255, 255), np.uint8)
 MIN_AREA = 150                       # px^2, ignore specks
 _KERNEL = np.ones((5, 5), np.uint8)
 _CROSS3 = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))   # see ring_pixels
