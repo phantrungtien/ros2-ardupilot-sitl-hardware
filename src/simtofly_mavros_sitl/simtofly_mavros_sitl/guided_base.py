@@ -151,7 +151,8 @@ class GuidedNode(Node):
         rclpy.spin_until_future_complete(self, fut, timeout_sec=5.0)
         return bool(fut.result() and fut.result().success)
 
-    def arm_with_retry(self, timeout=60.0, interval=2.0, blind_after=15.0):
+    def arm_with_retry(self, timeout=60.0, interval=2.0, blind_after=15.0,
+                       mode='GUIDED'):
         """Wait until the vehicle reports itself armable, then arm.
 
         Right after the link connects, EKF/GPS/home are not ready and prearm
@@ -172,18 +173,44 @@ class GuidedNode(Node):
         `blind_after` is the escape hatch: if sys_status never arrives (an
         older firmware, or the prearm bit not advertised) prearm_ok stays None
         and we fall back to the old blind retry rather than never arming.
+
+        `mode` is the mode to arm IN, confirmed against /mavros/state rather
+        than assumed. Callers already request GUIDED before getting here, but
+        set_mode() returns mode_sent -- the FCU accepted the REQUEST -- which is
+        not the same as being in that mode: ArduPilot refuses GUIDED until it
+        has a position estimate, exactly the window this function waits through.
+        Arming anyway would arm the vehicle in STABILIZE, where a setpoint
+        stream does nothing and the drone answers the sticks instead.
         """
         start = time.time()
-        said_wait = said_blind = False
+        said_wait = said_blind = said_ready = False
+        mode_at = 0.0
         while rclpy.ok() and time.time() - start < timeout:
-            ready, blind = arm_gate(self.prearm_ok, time.time() - start,
-                                    blind_after)
+            waited = time.time() - start
+            ready, blind = arm_gate(self.prearm_ok, waited, blind_after)
             if blind and not said_blind:
                 self.get_logger().warn(
                     'khong co /mavros/sys_status sau {:.0f}s -- quay ve thu '
                     'arm mu'.format(blind_after))
                 said_blind = True
             if ready:
+                if not said_ready:
+                    self.get_logger().info(
+                        'ready to arm ({:.1f}s)'.format(waited))
+                    said_ready = True
+                # Re-request the mode only if the vehicle is not already in it,
+                # and at most once per interval: a set_mode is another command
+                # whose ack lands in the same promise machinery this function
+                # exists to keep quiet.
+                if mode and self.state.mode != mode:
+                    if time.time() - mode_at >= interval:
+                        mode_at = time.time()
+                        self.get_logger().warn(
+                            'dang o mode {} -- xin lai {} truoc khi arm'.format(
+                                self.state.mode or '?', mode))
+                        self.set_mode(mode)
+                    rclpy.spin_once(self, timeout_sec=0.1)
+                    continue
                 if self.arm_once():
                     return True
                 end = time.time() + interval
