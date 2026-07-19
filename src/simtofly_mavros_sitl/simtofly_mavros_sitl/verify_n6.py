@@ -97,15 +97,23 @@ class VerifyN6(Node):
                         'LOT' if miss < R_IN else 'TRUOT NGOAI VANH'))
 
 
-def report(node):
-    """Grade every gate the drone crossed. Uncrossed gates are not failures --
-    the run may simply have been stopped before reaching them -- but a gate
-    crossed OUTSIDE the rim is."""
+def report(node, partial=False):
+    """Grade every gate on the map. A gate crossed outside the rim is a failure,
+    and so -- unless `partial` -- is a gate never crossed at all.
+
+    Uncrossed gates used to be excused, on the grounds that the run may have
+    been stopped early. That excuse graded a run which flew two of four rings
+    and then stalled for 190 s as `GD6 PASS`: the two it never reached were
+    silently dropped from the score. An interrupted run is the rarer case and
+    the operator knows when they interrupted one, so the strict reading is the
+    default and `--partial` asks for the lenient one.
+    """
     log = node.get_logger()
     if not node.gates:
         log.error('khong nhan duoc /gate/map')
         return False
-    log.info('=== GD6 === ({} vong tren ban do)'.format(len(node.gates)))
+    log.info('=== GD6 === ({} vong tren ban do{})'.format(
+        len(node.gates), ', cham kieu PARTIAL' if partial else ''))
     ok = bool(node.crossings)
     for i in sorted(node.gates):
         C = node.gates[i][0]
@@ -114,7 +122,9 @@ def report(node):
             far = min((float(np.linalg.norm(q - C)) for q in node.track),
                       default=float('nan'))
             log.info('  vong {} @ {}: KHONG cat mat phang, gan tam nhat {:.2f} m'
-                     .format(i, np.round(C, 2), far))
+                     ' {}'.format(i, np.round(C, 2), far,
+                                  '(bo qua)' if partial else '<- TRUOT'))
+            ok = ok and partial
             continue
         best = min(misses)
         clear = R_IN - best
@@ -128,6 +138,8 @@ def report(node):
 
 
 def main():
+    import sys
+    partial = '--partial' in sys.argv
     rclpy.init()
     node = VerifyN6()
     node.get_logger().info('dang do... Ctrl-C de cham diem')
@@ -148,7 +160,9 @@ def main():
     # printed rather than swallowed.
     except Exception as exc:
         print('spin ket thuc: {}: {}'.format(type(exc).__name__, exc))
-    print('GD6 {}'.format('PASS' if report(node) else 'FAIL'))
+    crossed = len(node.crossings)
+    print('GD6 {} ({}/{} vong da cat mat phang)'.format(
+        'PASS' if report(node, partial) else 'FAIL', crossed, len(node.gates)))
     node.destroy_node()
     try:
         rclpy.shutdown()
@@ -203,6 +217,19 @@ def _selfcheck():
     node.gates[kb] = (np.array([10.0, 2.0, 4.0]), n)
     assert node._key(np.array([10.02, 1.98, 4.01])) == kb      # same gate, drifted
     assert node._key(np.array([5.0, 0.0, 3.5])) != kb          # the late arrival
+
+    # a run that flew 2 of 4 rings must NOT score PASS -- the exact false green
+    # that hid a 190 s stall behind two good crossings
+    g = VerifyN6.__new__(VerifyN6)
+    g.gates = {i: (np.array([5.0 * i, 0.0, 3.5]), n) for i in range(4)}
+    g.crossings = {0: [0.02], 1: [0.05]}
+    g.track = [np.array([0.0, 0.0, 3.5])]
+    g.get_logger = lambda: type('L', (), {
+        'info': lambda _s, m, **k: None, 'error': lambda _s, m, **k: None})()
+    assert not report(g), 'hai vong chua bay van cham PASS'
+    assert report(g, partial=True), '--partial phai tha cho run bi cat ngan'
+    g.crossings = {i: [0.02] for i in range(4)}
+    assert report(g), 'bay du 4/4 ma cham FAIL'
     print('verify_n6 selfcheck OK')
 
 

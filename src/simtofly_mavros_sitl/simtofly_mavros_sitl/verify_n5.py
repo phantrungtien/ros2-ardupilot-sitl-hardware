@@ -171,5 +171,45 @@ def main():
             pass
 
 
+def _selfcheck():
+    """The grading rules only, no ROS:  python3 verify_n5.py --selfcheck
+
+    Every other module in this workspace answers --selfcheck; this one used to
+    take the flag, start a live node and exit with "khong nhan duoc pose",
+    which reads like a failure rather than "wrong tool". The thresholds below
+    are the whole point of the rig, so they are what gets checked.
+    """
+    def graded(err, axy, az, n=40):
+        node = VerifyN5.__new__(VerifyN5)
+        cmd_p = np.zeros((n, 3))
+        meas_p = np.tile([err, 0.0, 0.0], (n, 1))       # constant miss -> RMS=err
+        cmd_a = np.tile([axy, 0.0, az], (n, 1))
+        node.samples = [(cmd_p[i], meas_p[i], cmd_a[i], np.zeros(3))
+                        for i in range(n)]
+        node.cmd = (np.zeros(3), np.zeros(3), 2048)
+        node.get_logger = lambda: type('L', (), {
+            'info': lambda _s, m, **k: None, 'warn': lambda _s, m, **k: None,
+            'error': lambda _s, m, **k: None})()
+        return node.report(np.zeros(3))
+
+    assert graded(0.05, 1.0, 0.5), 'chuyen bay dat chuan bi cham TRUOT'
+    assert not graded(RMS_LIMIT + 0.01, 1.0, 0.5), 'RMS qua nguong van PASS'
+    assert not graded(0.05, WPNAV_ACCEL + 0.1, 0.5), 'accel ngang bi clamp van PASS'
+    assert not graded(0.05, 1.0, WPNAV_ACCEL_Z + 0.1), 'accel doc bi clamp van PASS'
+
+    # too few samples is "N5 never streamed", not "N5 flew badly"
+    thin = VerifyN5.__new__(VerifyN5)
+    thin.samples = []
+    thin.get_logger = lambda: type('L', (), {
+        'info': lambda _s, m, **k: None, 'warn': lambda _s, m, **k: None,
+        'error': lambda _s, m, **k: None})()
+    assert not thin.report(np.zeros(3)), 'khong co mau ma van PASS'
+    print('verify_n5 selfcheck OK (nguong RMS {:.2f} m, accel {:.1f}/{:.1f})'
+          .format(RMS_LIMIT, WPNAV_ACCEL, WPNAV_ACCEL_Z))
+
+
 if __name__ == '__main__':
-    main()
+    if '--selfcheck' in sys.argv:
+        _selfcheck()
+    else:
+        main()
