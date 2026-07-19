@@ -232,15 +232,16 @@ simulator does *not* give you (depth noise, min-Z blind zone, frame conventions)
 colcon build --symlink-install
 source install/setup.bash
 
-# The whole course: vision, planner, trajectory, FSM and overlay, each in its own
-# window. fsm:=true is what makes it a MISSION rather than a demo -- N6 ends the
-# flight, so only turn it on with a controller that actually flies the rings.
-ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
-    controller:=trajectory_follower fsm:=true
-
-# Verify N1..N4 instead of flying: hold_and_watch (the default) takes off and holds
-# still facing the first ring, which keeps it in frame while you read the topics.
+# The whole course, one command: vision, planner, trajectory, FSM and overlay,
+# each in its own window. It takes off, flies the four rings, judges each pass
+# and comes home.
 ros2 launch simtofly_mavros_sitl gates_mission.launch.py
+
+# Verify N1..N4 instead of flying: hold_and_watch takes off and holds still
+# facing the first ring, which keeps it in frame while you read the topics.
+# fsm:=false too, or N6 times every gate out and brings the drone home.
+ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
+    controller:=hold_and_watch fsm:=false
 ```
 
 It brings up the `ros_gz_bridge` that carries the depth image into ROS. Colour needs

@@ -30,23 +30,28 @@ gated by READINESS not timers:
  11. PlanOverlay - plan_overlay (N7): draws the live plan onto the colour image
                    -> /plan_overlay/image. Always on; it only reads.
 
-(8)-(9) are the Dijkstra planning stack, and what consumes /planner/path is the
-controller in slot (5). Pick it with `controller:=`:
+No arguments needed -- the defaults fly the whole course:
 
-  hold_and_watch       (default) takes off and holds still facing the first ring.
-                       Verifies N1..N4 without flying: a stationary drone keeps a
-                       ring in frame ~100% of the time instead of 1.3% (measured).
-  trajectory_follower  N5 -- flies the path as a Mueller minimum-jerk trajectory.
-                       This is the one that flies the course.
+    ros2 launch simtofly_mavros_sitl gates_mission.launch.py
+
+(8)-(9) are the Dijkstra planning stack, and what consumes /planner/path is the
+controller in slot (5). Pick another with `controller:=`:
+
+  trajectory_follower  (default) N5 -- flies the path as a Mueller minimum-jerk
+                       trajectory. With N6 on top (fsm:=true, also the default)
+                       this judges every pass and comes home: the full mission.
+  hold_and_watch       takes off and holds still facing the first ring. Verifies
+                       N1..N4 without flying: a stationary drone keeps a ring in
+                       frame ~100% of the time instead of 1.3% (measured). Pair
+                       it with fsm:=false or N6 times every gate out and RTLs
+                       while you are still reading topics:
+
+                           ... gates_mission.launch.py \
+                               controller:=hold_and_watch fsm:=false
+
   mission_gates        the legacy single-ring FSM. Does NOT work: it subscribes
                        /gate/obs, which nothing has published since N1 was
                        rewritten to emit /gate/detections.
-
-`fsm:=true` adds N6 on top, which is what turns a demo into a MISSION: it judges
-each pass by the plan par. 7 R3 test and ends the flight with RTL. The full course:
-
-    ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
-        controller:=trajectory_follower fsm:=true
 
 The two camera streams reach us by different routes, which is why (3) exists at
 all: COLOUR still arrives as H264/RTP on UDP 5600 (the colour sensor carries
@@ -270,9 +275,10 @@ def generate_launch_description():
     # d435i_depth_optical_frame`, not by reading a terminal.
     return LaunchDescription([
         DeclareLaunchArgument(
-            'controller', default_value='hold_and_watch',
-            description='hold_and_watch (default): take off and hold still facing '
-                        'gate_1 -- use this to verify N1..N4. mission_gates: the '
+            'controller', default_value='trajectory_follower',
+            description='trajectory_follower (default): fly the course. '
+                        'hold_and_watch: take off and hold still facing gate_1, '
+                        'for verifying N1..N4 without flying. mission_gates: the '
                         'legacy FSM, currently broken (listens to the dead '
                         '/gate/obs) and only yaw-sweeps.',
         ),
@@ -297,11 +303,12 @@ def generate_launch_description():
              name='color_tf', arguments=COLOR_TF_ARGS, output='screen',
              parameters=[{'use_sim_time': True}]),
         DeclareLaunchArgument(
-            'fsm', default_value='false',
-            description='open N6 mission_fsm (fsm:=true). It judges PASSED by '
-                        'the plan par. 7 R3 test and LANDS when the course is '
-                        'done -- so only with a controller that flies the '
-                        'gates, e.g. controller:=trajectory_follower.',
+            'fsm', default_value='true',
+            description='run N6 mission_fsm. It judges each pass by the plan '
+                        'par. 7 R3 test and ends the flight with RTL when the '
+                        'course is done. Turn it OFF (fsm:=false) with a '
+                        'controller that does not fly the gates, or every gate '
+                        'times out and N6 brings the drone home under you.',
         ),
         gnome_term('GateTracker', TRACKER_CMD),
         gnome_term('GatePlanner', PLANNER_CMD),
