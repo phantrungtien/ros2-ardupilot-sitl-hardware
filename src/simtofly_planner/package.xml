@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>simtofly_planner</name>
+  <version>1.0.0</version>
+  <description>Mapping and path planning for the gates course: N3 builds a 3D
+    occupancy voxel grid from the D435i depth image, N4 runs Dijkstra over it to
+    produce a collision-free path through each gate. Consumes /gate/map from
+    simtofly_vision (perception) over ROS topics only -- no code dependency.</description>
+  <maintainer email="phantrungtien1034@gmail.com">phantrungtien</maintainer>
+  <license>Apache-2.0</license>
+
+  <url type="website">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware</url>
+  <url type="repository">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware</url>
+  <url type="bugtracker">https://github.com/phantrungtien/ros2-ardupilot-sitl-hardware/issues</url>
+
+  <author email="phantrungtien1034@gmail.com">phantrungtien</author>
+
+  <!-- numpy/scipy are pip deps, NOT rosdep keys (scipy provides the sparse
+       Dijkstra and the distance transform / dilation the grid needs). -->
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+  <!-- plan_overlay (N7) reads the setpoint stream to draw what N5 actually
+       commanded. opencv is a pip dep like numpy/scipy, not a rosdep key. -->
+  <depend>mavros_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
