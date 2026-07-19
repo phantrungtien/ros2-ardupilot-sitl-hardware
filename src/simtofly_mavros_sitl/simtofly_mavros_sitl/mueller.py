@@ -45,9 +45,18 @@ A_HORIZ_MAX = 1.75         # m/s^2
 A_VERT_MAX = 0.70          # m/s^2  -- tighter, WPNAV_ACCEL_Z is only 1.0
 J_HORIZ_MAX = 3.50         # m/s^3
 J_VERT_MAX = 3.50          # m/s^3
+
 V_HORIZ_MAX = 7.00         # m/s    -- 70% of WPNAV_SPEED 10.0; never binds at
                            #           the 0.8 m/s we actually fly
 T_MIN = 1e-3               # s; below this the quintic is numerically meaningless
+
+# Why the last solve() gave up: (which constraint, T tried, accel/limit,
+# jerk/limit). Diagnostic only -- a failed solve is reported by the node that
+# asked for it, and this is the only way library code can say WHY.
+LAST_FAIL = None
+# ...and what the caller was asking for when it did: set by the caller, kept
+# here so one read gets the whole picture. (d, turn deg, |v0|, |a0|, k, n_seg)
+LAST_ASK = None
 
 
 class Trajectory:
@@ -209,13 +218,26 @@ def solve(p0, v0, a0, pf, vf, af, T, corridor=None, radius=0.5,
     `corridor` is (a, b) world points; when given, the path must also stay within
     `radius` of that segment -- the corridor N4's Dijkstra already proved clear.
     """
+    global LAST_FAIL
     T = max(float(T), T_MIN)
     for _ in range(int(tries)):
         traj = Trajectory(p0, v0, a0, pf, vf, af, T)
-        if traj.input_feasible() and (
-                corridor is None or corridor_clear(traj, corridor[0],
-                                                   corridor[1], radius)):
+        ok_input = traj.input_feasible()
+        ok_corr = corridor is None or corridor_clear(
+            traj, corridor[0], corridor[1], radius)
+        if ok_input and ok_corr:
             return traj, T
+        # WHICH constraint failed is worth knowing: stretching T strictly helps
+        # the input limits and need not help the corridor at all, so the two
+        # failures call for different fixes. Recorded rather than logged -- this
+        # is library code with no logger, and the caller knows what it was flying.
+        LAST_FAIL = ('accel/jerk' if not ok_input else 'hanh lang', T,
+                     float(np.max(traj.peak_accel()
+                                  / np.array([A_HORIZ_MAX, A_HORIZ_MAX,
+                                              A_VERT_MAX]))),
+                     float(np.max(traj.peak_jerk()
+                                  / np.array([J_HORIZ_MAX, J_HORIZ_MAX,
+                                              J_VERT_MAX]))))
         T *= growth
     return None, None
 
