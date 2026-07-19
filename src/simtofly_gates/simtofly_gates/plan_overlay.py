@@ -24,7 +24,7 @@ trajectory cost. Both live inside N5 and neither is published anywhere.
 
 View with:  ros2 run rqt_image_view rqt_image_view /plan_overlay/image
 
-Run:  ros2 run simtofly_planner plan_overlay
+Run:  ros2 run simtofly_gates plan_overlay
       python3 plan_overlay.py --selfcheck      (projection maths, no ROS)
 """
 import collections
@@ -34,7 +34,7 @@ import cv2
 import numpy as np
 
 try:
-    from simtofly_planner.voxel_map import MAP_FRAME, quat_to_matrix
+    from simtofly_gates.voxel_map import MAP_FRAME, quat_to_matrix
 except ImportError:
     from voxel_map import MAP_FRAME, quat_to_matrix
 

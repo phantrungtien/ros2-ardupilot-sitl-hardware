@@ -39,7 +39,7 @@ whole 3D localisation below is unchanged.
 # ponytail: classical finds one orange ellipse as well as DL would, with no model
 # or dataset to train; the 3D maths, not the 2D box, is where the value is.
 
-Run:  ros2 run simtofly_vision gate_detect [--gui]
+Run:  ros2 run simtofly_gates gate_detect [--gui]
       python3 gate_detect.py --selfcheck   # no camera, no ROS
 (Gazebo with gates_course.sdf + the d435i bridge must be up. gates_mission.launch.py
 starts all of it.)

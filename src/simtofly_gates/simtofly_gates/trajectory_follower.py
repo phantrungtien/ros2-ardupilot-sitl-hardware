@@ -27,7 +27,7 @@ Three things here are load-bearing and easy to break:
    the drone ~1.0 m where dropping it moves 0.02 m. If a future firmware ignores
    accel, MASK_FALLBACK below is the pos+vel-only escape.
 
-Run:  ros2 run simtofly_mavros_sitl trajectory_follower
+Run:  ros2 run simtofly_gates trajectory_follower
       python3 trajectory_follower.py --selfcheck
 """
 import collections
@@ -38,8 +38,8 @@ import time
 import numpy as np
 
 try:
-    from simtofly_mavros_sitl import mueller
-    from simtofly_mavros_sitl.mueller import (
+    from simtofly_gates import mueller
+    from simtofly_gates.mueller import (
         A_HORIZ_MAX, A_VERT_MAX, J_HORIZ_MAX, Trajectory, solve)
 except ImportError:                       # running the file directly
     import mueller

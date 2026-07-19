@@ -22,7 +22,7 @@ Start this BEFORE N5 takes off and leave it running for the whole flight; it
 grades on Ctrl-C. A fixed run length silently grades the wrong window -- the
 map only fills in as the drone flies, so the interesting crossings are late.
 
-Run (before starting N5):  ros2 run simtofly_mavros_sitl verify_n6
+Run (before starting N5):  ros2 run simtofly_gates verify_n6
 """
 import numpy as np
 import rclpy
@@ -31,7 +31,7 @@ from rclpy.node import Node
 
 try:
     from simtofly_mavros_sitl.guided_base import mavros_qos
-    from simtofly_mavros_sitl.mission_fsm import (CLEAR_MIN, KEY_R, R_IN,
+    from simtofly_gates.mission_fsm import (CLEAR_MIN, KEY_R, R_IN,
                                                   plane_crossing,
                                                   zaxis_from_quat)
 except ImportError:

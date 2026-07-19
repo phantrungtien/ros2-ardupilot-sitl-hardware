@@ -184,12 +184,12 @@ Seven nodes, three packages:
 
 | # | Node | Does |
 |---|------|------|
-| N1 | `simtofly_vision/gate_detect` | Finds each orange ring (HSV mask) and fits its **plane** in the depth cloud → `/gate/detections`, in metres |
-| N2 | `simtofly_vision/gate_tracker` | Associates detections across frames into stable gates → `/gate/map` |
-| N3+N4 | `simtofly_planner/gate_planner` | Builds the occupancy grid, carves a corridor through the target ring, and runs Dijkstra over it → `/planner/path` |
-| N5 | `simtofly_mavros_sitl/trajectory_follower` | Fits a **Mueller minimum-jerk** trajectory to that path and streams position setpoints at 20 Hz |
-| N6 | `simtofly_mavros_sitl/mission_fsm` | Owns the mission: judges each pass, enforces the geofence and pose watchdog, and ends the flight |
-| N7 | `simtofly_planner/plan_overlay` | Draws the live plan back onto the colour image → `/plan_overlay/image` |
+| N1 | `simtofly_gates/gate_detect` | Finds each orange ring (HSV mask) and fits its **plane** in the depth cloud → `/gate/detections`, in metres |
+| N2 | `simtofly_gates/gate_tracker` | Associates detections across frames into stable gates → `/gate/map` |
+| N3+N4 | `simtofly_gates/gate_planner` | Builds the occupancy grid, carves a corridor through the target ring, and runs Dijkstra over it → `/planner/path` |
+| N5 | `simtofly_gates/trajectory_follower` | Fits a **Mueller minimum-jerk** trajectory to that path and streams position setpoints at 20 Hz |
+| N6 | `simtofly_gates/mission_fsm` | Owns the mission: judges each pass, enforces the geofence and pose watchdog, and ends the flight |
+| N7 | `simtofly_gates/plan_overlay` | Draws the live plan back onto the colour image → `/plan_overlay/image` |
 
 **A pass is not "we ended up past the ring".** N6 watches the signed distance along
 the gate normal, interpolates the exact plane crossing, and measures the off-axis miss
@@ -235,12 +235,12 @@ source install/setup.bash
 # The whole course, one command: vision, planner, trajectory, FSM and overlay,
 # each in its own window. It takes off, flies the four rings, judges each pass
 # and comes home.
-ros2 launch simtofly_mavros_sitl gates_mission.launch.py
+ros2 launch simtofly_gates gates_mission.launch.py
 
 # Verify N1..N4 instead of flying: hold_and_watch takes off and holds still
 # facing the first ring, which keeps it in frame while you read the topics.
 # fsm:=false too, or N6 times every gate out and brings the drone home.
-ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
+ros2 launch simtofly_gates gates_mission.launch.py \
     controller:=hold_and_watch fsm:=false
 ```
 
@@ -252,7 +252,7 @@ Watch it work:
 ```bash
 ros2 run rqt_image_view rqt_image_view /plan_overlay/image   # the plan, on the camera
 ros2 topic echo /gate/map                                    # the rings it believes in
-ros2 run simtofly_mavros_sitl verify_n6                      # grade a run (Ctrl-C to score)
+ros2 run simtofly_gates verify_n6                      # grade a run (Ctrl-C to score)
 ```
 
 #### 3. Two things that are easy to get wrong

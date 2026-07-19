@@ -170,7 +170,7 @@ class VoxelGrid:
 # planner planned against a blank map and never learned better. Nothing outside
 # the planner ever read the grid, so it never needed to be a message. gate_planner
 # now folds depth in itself and this file is the pure data structure plus the two
-# functions that feed it. `ros2 run simtofly_planner gate_planner` is the one node.
+# functions that feed it. `ros2 run simtofly_gates gate_planner` is the one node.
 # =========================================================================
 def quat_to_matrix(x, y, z, w):
     return np.array([

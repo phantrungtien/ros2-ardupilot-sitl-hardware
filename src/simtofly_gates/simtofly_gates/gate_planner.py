@@ -43,7 +43,7 @@ Output -- nav_msgs/Path on /planner/path, frame `map`, yaw baked into each pose:
 free-flight waypoints face their direction of travel (camera looks where it goes),
 the P_pre..P_post run is locked to the gate normal.
 
-Run:  ros2 run simtofly_planner gate_planner
+Run:  ros2 run simtofly_gates gate_planner
       python3 gate_planner.py --selfcheck
 (Needs N2 on /gate/map, N3 on /mapping/voxels, MAVROS local_position/pose.)
 """
@@ -55,7 +55,7 @@ from scipy import sparse
 from scipy.sparse import csgraph
 
 try:
-    from simtofly_planner.voxel_map import (
+    from simtofly_gates.voxel_map import (
         VoxelGrid, backproject_depth, quat_to_matrix,
         INFLATE_R, MAP_FRAME, DEPTH_TOPIC, BUILD_HZ)
 except ImportError:                       # running the file directly
@@ -114,7 +114,7 @@ def zaxis_from_quat(x, y, z, w):
     """A pose's local +Z in the parent frame.
 
     N2 encodes each gate's normal as the pose's +Z axis; this decodes it. Kept
-    here rather than imported so simtofly_planner needs no code dependency on
+    here rather than imported so this package needs no code dependency on
     simtofly_vision -- the two packages meet on ROS topics only. If the encoding
     ever changes, it changes in gate_tracker.quat_from_zaxis and here together.
     """

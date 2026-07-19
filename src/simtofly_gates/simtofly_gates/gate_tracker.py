@@ -29,7 +29,7 @@ does not. N2's job ends at "here is the stable set of rings and where they are".
         position    = filtered ring centre (map)
         orientation = quaternion whose +Z is the ring normal (fly-through dir, map)
 
-Run:  ros2 run simtofly_vision gate_tracker
+Run:  ros2 run simtofly_gates gate_tracker
       python3 gate_tracker.py --selfcheck
 (Needs N1 publishing /gate/detections, MAVROS publishing map->base_link, and the
 static base_link->d435i_depth_optical_frame TF from gates_mission.launch.py.)

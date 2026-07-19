@@ -28,8 +28,8 @@ card, not an input.
 --probe-accel answers the one question N5 is blocked on: does THIS ArduCopter
 honour the acceleration field of SET_POSITION_TARGET_LOCAL_NED? See _probe_accel.
 
-Run:  ros2 run simtofly_mavros_sitl hold_and_watch
-      ros2 run simtofly_mavros_sitl hold_and_watch --probe-accel
+Run:  ros2 run simtofly_gates hold_and_watch
+      ros2 run simtofly_gates hold_and_watch --probe-accel
       python3 hold_and_watch.py --selfcheck
 """
 import math

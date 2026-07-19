@@ -31,7 +31,7 @@ measures 4/4 gates at <0.02 m with an untested copy. What was genuinely missing:
 Tracking-error ABORT (par. 6.3) stays in N5 -- it owns the commanded state that
 the error is measured against; N5 already holds at 0.5 m.
 
-Run:  ros2 run simtofly_mavros_sitl mission_fsm
+Run:  ros2 run simtofly_gates mission_fsm
       python3 mission_fsm.py --selfcheck      (geometry + bookkeeping, no ROS)
 """
 import time

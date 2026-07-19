@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>simtofly_planner</name>
+  <name>simtofly_gates</name>
   <version>1.0.0</version>
-  <description>Mapping and path planning for the gates course: N3 builds a 3D
-    occupancy voxel grid from the D435i depth image, N4 runs Dijkstra over it to
-    produce a collision-free path through each gate. Consumes /gate/map from
-    simtofly_vision (perception) over ROS topics only -- no code dependency.</description>
+  <description>Fly a course of racing rings on the onboard camera alone, N1-N7.
+    N1 finds each orange ring and fits its plane in the depth cloud, N2 tracks
+    them into a stable map, N3/N4 build an occupancy grid and plan through the
+    next ring, N5 flies that path as a Mueller minimum-jerk trajectory, N6 owns
+    the mission and judges every pass, N7 draws the live plan back onto the
+    colour image.</description>
   <maintainer email="phantrungtien1034@gmail.com">phantrungtien</maintainer>
   <license>Apache-2.0</license>
 
@@ -16,17 +18,21 @@
 
   <author email="phantrungtien1034@gmail.com">phantrungtien</author>
 
-  <!-- numpy/scipy are pip deps, NOT rosdep keys (scipy provides the sparse
-       Dijkstra and the distance transform / dilation the grid needs). -->
+  <!-- numpy/scipy/opencv are pip deps, NOT rosdep keys. -->
   <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>visualization_msgs</depend>
-  <!-- plan_overlay (N7) reads the setpoint stream to draw what N5 actually
-       commanded. opencv is a pip dep like numpy/scipy, not a rosdep key. -->
   <depend>mavros_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>message_filters</depend>
+  <!-- guided_base lives there and is shared with the non-gate missions
+       (mission_circle, verify_frame), so it is a dependency rather than a copy:
+       one arming path, one place to fix it. -->
+  <depend>simtofly_mavros_sitl</depend>
 
   <export>
     <build_type>ament_python</build_type>

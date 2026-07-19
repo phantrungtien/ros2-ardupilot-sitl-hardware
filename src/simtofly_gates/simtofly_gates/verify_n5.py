@@ -12,7 +12,7 @@ No perception: the path is synthetic, so this grades N5 alone. It publishes on
 trajectory_follower cannot tell the difference.
 
 Run (with trajectory_follower already flying):
-    ros2 run simtofly_mavros_sitl verify_n5
+    ros2 run simtofly_gates verify_n5
 """
 import math
 import sys

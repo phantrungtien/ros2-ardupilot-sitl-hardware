@@ -49,9 +49,9 @@ controller in slot (5). Pick another with `controller:=`:
                            ... gates_mission.launch.py \
                                controller:=hold_and_watch fsm:=false
 
-  mission_gates        the legacy single-ring FSM. Does NOT work: it subscribes
-                       /gate/obs, which nothing has published since N1 was
-                       rewritten to emit /gate/detections.
+(The legacy single-ring mission_gates is no longer selectable here: it stayed
+behind in simtofly_mavros_sitl with the other pre-course missions, and it has not
+worked since N1 was rewritten to emit /gate/detections instead of /gate/obs.)
 
 The two camera streams reach us by different routes, which is why (3) exists at
 all: COLOUR still arrives as H264/RTP on UDP 5600 (the colour sensor carries
@@ -143,8 +143,8 @@ SITL_CMD = WAIT_GAZEBO + (
 BRIDGE_CMD = (
     ROS_SETUP
     + WAIT_GAZEBO +
-    'CFG=$(ros2 pkg prefix simtofly_mavros_sitl)'
-    '/share/simtofly_mavros_sitl/config/d435i_bridge.yaml\n'
+    'CFG=$(ros2 pkg prefix simtofly_gates)'
+    '/share/simtofly_gates/config/d435i_bridge.yaml\n'
     'ros2 run ros_gz_bridge parameter_bridge --ros-args -p config_file:=$CFG'
 )
 # apm.launch with the `param` plugin denied -- it aborts MAVROS on duplicate parameter
@@ -177,12 +177,12 @@ CONTROLLER = LaunchConfiguration('controller')
 # through the launch rather than a hand-run terminal on purpose: only ONE node may
 # stream setpoints, so running a second controller alongside this one fights it.
 CONTROLLER_ARGS = LaunchConfiguration('controller_args')
-MISSION_CMD = [ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_mavros_sitl ',
+MISSION_CMD = [ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_gates ',
                CONTROLLER, ' ', CONTROLLER_ARGS, SIM_TIME]
 # GATE_GUI=1 (and --gui) -> gate_detect opens its OpenCV overlay window.
 VISION_CMD = (ROS_SETUP + WAIT_MAVROS
               + 'export GATE_GUI=1\n'
-              + 'ros2 run simtofly_vision gate_detect --gui' + SIM_TIME)
+              + 'ros2 run simtofly_gates gate_detect --gui' + SIM_TIME)
 
 # The camera extrinsic, and the ONLY place it is stated. Translation is straight
 # out of drone_vision/models/iris_with_d435i/model.sdf: the d435i include sits at
@@ -213,25 +213,25 @@ COLOR_TF_ARGS = [
     '--child-frame-id', 'd435i_color_optical_frame',
 ]
 TRACKER_CMD = (ROS_SETUP + WAIT_MAVROS
-               + 'ros2 run simtofly_vision gate_tracker' + SIM_TIME)
+               + 'ros2 run simtofly_gates gate_tracker' + SIM_TIME)
 # gate_planner IS N3+N4: it builds the voxel grid from depth and plans on it in one
 # process. There is no separate voxel_mapper node -- shipping the grid between two
 # nodes as an RViz marker list dropped nearly all of it, and the planner ended up
 # planning against a blank map. It still publishes /mapping/voxels for RViz.
 PLANNER_CMD = (ROS_SETUP + WAIT_MAVROS
-               + 'ros2 run simtofly_planner gate_planner' + SIM_TIME)
+               + 'ros2 run simtofly_gates gate_planner' + SIM_TIME)
 # N6. OPT-IN (fsm:=true), because it ENDS the mission: with a controller that
 # never threads a ring -- hold_and_watch just hovers -- every gate eventually
 # hits GATE_TIMEOUT, N6 calls the course finished and lands the drone out from
 # under whatever you were verifying. Only turn it on with a controller that
 # actually flies the gates.
 FSM_CMD = (ROS_SETUP + WAIT_MAVROS
-           + 'ros2 run simtofly_mavros_sitl mission_fsm' + SIM_TIME)
+           + 'ros2 run simtofly_gates mission_fsm' + SIM_TIME)
 # N7. Draws the plan onto the colour image and republishes it; watch with
 # `ros2 run rqt_image_view rqt_image_view /plan_overlay/image`. Always on: it
 # only ever reads and publishes its own topic, so it cannot disturb a flight.
 OVERLAY_CMD = (ROS_SETUP + WAIT_MAVROS
-               + 'ros2 run simtofly_planner plan_overlay' + SIM_TIME)
+               + 'ros2 run simtofly_gates plan_overlay' + SIM_TIME)
 
 
 # Printed the moment the window's process exits. Without it the window just sits
@@ -278,9 +278,8 @@ def generate_launch_description():
             'controller', default_value='trajectory_follower',
             description='trajectory_follower (default): fly the course. '
                         'hold_and_watch: take off and hold still facing gate_1, '
-                        'for verifying N1..N4 without flying. mission_gates: the '
-                        'legacy FSM, currently broken (listens to the dead '
-                        '/gate/obs) and only yaw-sweeps.',
+                        'for verifying N1..N4 without flying (pair with '
+                        'fsm:=false).',
         ),
         DeclareLaunchArgument(
             'controller_args', default_value='',

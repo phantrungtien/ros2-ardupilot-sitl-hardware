@@ -226,7 +226,7 @@ def generate_launch_description():
         # after Gazebo is up -- it retries the stream, harmless if early.
         gnome_term(
             'GateVision',
-            ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_vision gate_detect',
+            ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_gates gate_detect',
             condition=gates_on,
         ),
     ])
