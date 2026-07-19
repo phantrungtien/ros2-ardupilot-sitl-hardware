@@ -57,6 +57,15 @@ INFLATE_R = ROBOT_RADIUS + INFLATE_MARGIN     # 0.60 m
 # z to ~5). Generous so nothing the drone flies through falls outside.
 GRID_ORIGIN = (-2.0, -6.0, 0.0)               # world coord of the (0,0,0) corner
 GRID_DIMS = (26.0, 12.0, 8.0)                 # m -> 130 x 60 x 40 = 312k voxels
+# ...but the box GROWS when something the planner cares about falls outside it,
+# see VoxelGrid.cover(). A fixed box fails silently and expensively: a gate 6 m
+# behind the launch point sat at x = -6.01 against an origin of x = -2, so every
+# plan to it returned None with no explanation, the FSM waited out its 90 s
+# timeout, and the gate was written off as unreachable. The map was never the
+# problem -- the map simply did not extend that far.
+_LATTICE_EPS = 1e-9        # voxel units; see world_to_idx
+GROW_MARGIN = 3.0          # m of slack added beyond whatever forced the growth,
+                           # so a drone edging outward does not re-grow every tick
 
 BUILD_HZ = 5.0
 PIXEL_STRIDE = 4          # back-project every Nth depth pixel (plan: subsample 4x)
@@ -110,10 +119,50 @@ class VoxelGrid:
 
     # --- index <-> world ---
     def world_to_idx(self, pts):
+        # +_LATTICE_EPS before the floor. res is 0.2, which binary floating point
+        # cannot hold exactly, so a point sitting ON a voxel boundary divides to
+        # something like 70.99999999999999 and floors to the cell BELOW the one
+        # it belongs to. Harmless while the origin never moved; the moment
+        # cover() shifts it, the same world point indexes one cell away from
+        # where its data was copied, and an obstacle appears to teleport. The
+        # epsilon is 1e-9 of a voxel -- 0.2 nanometres -- so it can only ever
+        # decide a tie, never move a point that was genuinely inside a cell.
         pts = np.atleast_2d(np.asarray(pts, float))
-        idx = np.floor((pts - self.origin) / self.res).astype(np.int64)
+        idx = np.floor((pts - self.origin) / self.res + _LATTICE_EPS).astype(np.int64)
         inb = np.all((idx >= 0) & (idx < np.array(self.shape)), axis=1)
         return idx, inb
+
+    def cover(self, pts, margin=GROW_MARGIN):
+        """Grow the box until every point in `pts` is inside it. True if it grew.
+
+        The accumulated occupancy is KEPT: a bigger array is allocated and the
+        old one copied into its offset, so growing costs a copy and never a
+        memory. Anything new is False -- unknown, which this planner already
+        treats as free.
+
+        Only the low corner and the dimensions move; `res` never does, so a
+        voxel keeps its size and every index derived after a growth still means
+        the same volume it did before.
+        """
+        pts = np.atleast_2d(np.asarray(pts, float))
+        if not len(pts):
+            return False
+        hi_now = self.origin + np.array(self.shape) * self.res
+        lo_need = np.minimum(self.origin, pts.min(axis=0) - margin)
+        hi_need = np.maximum(hi_now, pts.max(axis=0) + margin)
+        if np.allclose(lo_need, self.origin) and np.allclose(hi_need, hi_now):
+            return False
+        # snap the new corner to the voxel lattice, or every existing index
+        # shifts by a fraction of a cell and the copy below would smear the map
+        lo_new = self.origin - np.ceil((self.origin - lo_need) / self.res) * self.res
+        shape_new = tuple(int(math.ceil(d / self.res)) for d in (hi_need - lo_new))
+        occ_new = np.zeros(shape_new, bool)
+        off = np.rint((self.origin - lo_new) / self.res).astype(int)
+        occ_new[off[0]:off[0] + self.shape[0],
+                off[1]:off[1] + self.shape[1],
+                off[2]:off[2] + self.shape[2]] = self.occ
+        self.origin, self.shape, self.occ = lo_new, shape_new, occ_new
+        return True
 
     def idx_to_world(self, idx):
         """Centre of the voxel(s)."""
@@ -238,6 +287,34 @@ def _selfcheck():
     right = pts[np.argmax(pts[:, 0])]
     assert abs(right[2] - 4.0) < 1e-4 and right[0] > 0 and abs(right[1]) < 1e-4, right
     assert abs(right[0] - 80 * 4.0 / _FX) < 1e-3, right    # x = (du)*z/fx
+
+    # --- the box grows to cover a target outside it, and KEEPS the map ---
+    # This is the failure it exists for: a gate 6 m behind the launch point at
+    # x = -6.01, against a box starting at x = -2. Every plan to it returned
+    # None and nothing said why.
+    gg = VoxelGrid(origin=(-2.0, -6.0, 0.0), dims_m=(26.0, 12.0, 8.0), res=0.2)
+    wall = np.array([[5.0, y, z] for y in np.arange(-1.0, 1.0, 0.1)
+                     for z in np.arange(1.0, 3.0, 0.1)])
+    gg.integrate(wall)
+    n_before = int(gg.occ.sum())
+    assert n_before > 0
+    outside = np.array([[-6.01, 0.96, 3.52]])
+    assert not gg.world_to_idx(outside)[1][0], 'fixture khong con nam ngoai luoi'
+
+    assert gg.cover(outside), 'phai bao la da noi'
+    assert gg.world_to_idx(outside)[1][0], 'noi xong ma van nam ngoai'
+    assert int(gg.occ.sum()) == n_before, 'noi luoi lam MAT vat can da dung'
+    # ...and the surviving obstacle is still at the same PLACE, not just the
+    # same count -- an off-by-one in the copy offset would keep both
+    idx, ok = gg.world_to_idx([[5.0, 0.0, 2.0]])
+    assert ok[0] and gg.occ[tuple(idx[0])], 'vat can bi dich cho sau khi noi'
+
+    # growing again for a point already inside is a no-op, or a drone drifting
+    # outward would reallocate the whole map every tick
+    assert not gg.cover(np.array([[0.0, 0.0, 3.0]])), 'noi lai khi khong can'
+
+    # the voxel size never changes, so indices keep meaning the same volume
+    assert abs(gg.res - 0.2) < 1e-12
 
     print('voxel_map N3 self-check OK '
           '(grid {}, ring hole closes @0.6m infl, corridor reopens)'.format(gr.shape))
