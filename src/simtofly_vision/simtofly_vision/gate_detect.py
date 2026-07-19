@@ -48,8 +48,24 @@ import math
 import os
 import time
 
-import cv2
-import numpy as np
+# MUST come before numpy: OpenBLAS reads this when its library loads, and setting
+# it afterwards does nothing. This one line was 90% of this node's CPU.
+#
+# Every frame runs a handful of SVDs on small point sets (fit_plane, fit_circle).
+# They are microseconds of arithmetic, but OpenBLAS still hands each one to a
+# pool of one-thread-per-core -- 20 here -- and that pool SPIN-WAITS between
+# calls. Measured on one 848x480 frame: 949% CPU and 22 ms; pinned to one thread,
+# 27% CPU and 9 ms. Both numbers improve, which is the giveaway that the
+# parallelism was never buying anything: the threads were burning cores waiting
+# for work far too small to split.
+#
+# Not a guess at OpenCV, which was the obvious suspect and is innocent: with
+# cv2.setNumThreads(1) the CPU did not move. setdefault so an operator can still
+# override it from the environment.
+os.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
+
+import cv2  # noqa: E402
+import numpy as np  # noqa: E402
 import rclpy
 from geometry_msgs.msg import Pose, PoseArray
 from message_filters import ApproximateTimeSynchronizer, Subscriber
