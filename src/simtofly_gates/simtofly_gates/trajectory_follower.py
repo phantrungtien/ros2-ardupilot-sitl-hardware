@@ -119,6 +119,19 @@ MIN_SEG_LEN = 0.15         # m; a target nearer than this is not worth a segment
                            # v_cruise inside the accel limit -- ask for less and
                            # the quintic has to reverse out to make room.
 
+# Opening sweep: climb a step, turn all the way round, look again. This is what
+# finds the gates that are not in front of the drone at takeoff -- one BEHIND it,
+# and one too high to be in frame. The camera is bolted to the airframe and sees
+# 42.5 deg vertically, so a ring more than 1.95 m above the drone at 5 m range is
+# simply not there. Climbing is the only way to look up.
+#
+# Sweeping is worth doing HERE, at the start, and nowhere else: every gate on
+# this course is within ~6 m of the launch point, while a sweep after the run
+# would be 20 m past everything it was meant to find.
+SCAN_LEVELS = (0.0, 1.5, 3.0)   # m above TAKEOFF_ALT, one full turn at each
+SCAN_YAW_RATE = 0.5             # rad/s; a turn takes 2*pi/rate = 12.6 s
+SCAN_CLIMB_S = 4.0              # s allowed to reach each level before turning
+
 MASK_PVA = 2048            # pos+vel+accel+yaw (ignore yaw_rate only)
 MASK_FALLBACK = 2496       # pos+vel+yaw -- if a firmware ever drops accel
 
@@ -418,6 +431,7 @@ def _build_node():
             self.last_path = None      # kept so a truncated chain can be retried
             self.truncated = False
             self.n_replan = 0
+            self.scan = '--no-scan' not in sys.argv
             self.n_empty = 0        # consecutive paths that built no segments
             self.retry_at = 0.0         # earliest rebuild after a tracking abort
             # (time, commanded position) for the last couple of seconds, so the
@@ -603,6 +617,59 @@ def _build_node():
                                                   np.asarray(a, float).copy())
             self.cmd_log.append((time.time(), self.cmd_p))
 
+        def opening_sweep(self):
+            """Climb through SCAN_LEVELS, turning a full circle at each.
+
+            Position setpoints only -- the yaw field of the same PositionTarget
+            we already stream, walked round at SCAN_YAW_RATE. Nothing new talks
+            to the FCU, and the 20 Hz stream never stops (par. 5.1), so this is
+            just a different thing to say at the usual rate.
+
+            N1/N2 are running the whole time; the sweep does not look at what
+            they find, it just gives them the chance. Deciding whether enough
+            gates are known is N6's job, not this node's.
+            """
+            base = self._xyz()
+            for lvl, dz in enumerate(SCAN_LEVELS):
+                goal = np.array([base[0], base[1], base[2] + dz])
+                yaw = self.heading_enu()
+                # climb first, holding the current heading
+                end = time.time() + SCAN_CLIMB_S
+                while rclpy.ok() and time.time() < end:
+                    self._publish(goal, np.zeros(3), np.zeros(3), yaw)
+                    rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
+                    if abs(self._xyz()[2] - goal[2]) < 0.2:
+                        break
+                # ...then one full turn on the spot
+                turned, t_prev, said = 0.0, time.time(), 0
+                while rclpy.ok() and turned < 2.0 * math.pi:
+                    now = time.time()
+                    step = SCAN_YAW_RATE * (now - t_prev)
+                    t_prev = now
+                    turned += step
+                    yaw += step
+                    self._publish(goal, np.zeros(3), np.zeros(3),
+                                  math.atan2(math.sin(yaw), math.cos(yaw)))
+                    rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
+                    # does the vehicle actually FOLLOW a yaw setpoint? Commanded
+                    # vs measured, every quarter turn.
+                    if turned > said * math.pi / 2:
+                        said += 1
+                        self.get_logger().info(
+                            '  quay: ra lenh {:+.0f} deg, do duoc {:+.0f} deg'
+                            .format(math.degrees(math.atan2(math.sin(yaw),
+                                                            math.cos(yaw))),
+                                    math.degrees(self.heading_enu())))
+                self.get_logger().info(
+                    'quet tang {}/{} xong o z={:.1f} m'.format(
+                        lvl + 1, len(SCAN_LEVELS), goal[2]))
+            self.hold = self._xyz()
+            self.hold_yaw = self.heading_enu()
+            self.cmd_p = self.hold.copy()
+            self.cmd_v = np.zeros(3)
+            self.cmd_a = np.zeros(3)
+            self.cmd_log.clear()
+
         def run(self):
             if not self.wait_for_services():
                 self.get_logger().error('MAVROS services khong len'); return
@@ -653,6 +720,10 @@ def _build_node():
             # the first setpoint even goes out.
             self.hold = self._xyz()
             self.cmd_p = self.hold.copy()
+            if self.scan:
+                self.get_logger().info('quet mo dau: {} tang, moi tang mot vong '
+                                       '360 do'.format(len(SCAN_LEVELS)))
+                self.opening_sweep()
             self.get_logger().info(
                 'N5 san sang tai {} -- doi /planner/path'.format(
                     np.round(self.hold, 2)))
