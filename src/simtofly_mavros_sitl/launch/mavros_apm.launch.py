@@ -50,11 +50,22 @@ def generate_launch_description():
     # The per-plugin config stays ArduPilot's own -- we only change WHICH plugins load.
     apm_config = os.path.join(
         get_package_share_directory('mavros'), 'launch', 'apm_config.yaml')
+    # Loaded AFTER apm_config so it overrides that file's tf.send: false. See the
+    # file itself for why this cannot be an inline parameter on this Node.
+    tf_config = os.path.join(
+        get_package_share_directory('simtofly_mavros_sitl'),
+        'config', 'mavros_tf.yaml')
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'fcu_url', default_value='udp://:14550@',
             description='SITL: udp://:14550@ . Hardware: see simtofly_mavros_real.',
+        ),
+        DeclareLaunchArgument(
+            'use_sim_time', default_value='false',
+            description='true under Gazebo, so MAVROS stamps its TF on the SIM '
+                        'clock like the camera images. gates_mission.launch.py '
+                        'passes true; on real hardware leave it false.',
         ),
         Node(
             package='mavros',
@@ -64,6 +75,7 @@ def generate_launch_description():
             parameters=[
                 pluginlists,
                 apm_config,
+                tf_config,
                 {
                     'fcu_url': LaunchConfiguration('fcu_url'),
                     # Empty = no GCS bridge. This is why we do not just shell out to
@@ -72,6 +84,7 @@ def generate_launch_description():
                     'gcs_url': '',
                     'tgt_system': 1,
                     'tgt_component': 1,
+                    'use_sim_time': LaunchConfiguration('use_sim_time'),
                     'fcu_protocol': 'v2.0',
                 },
             ],

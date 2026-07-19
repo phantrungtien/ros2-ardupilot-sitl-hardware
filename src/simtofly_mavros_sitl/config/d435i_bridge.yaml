@@ -1,0 +1,65 @@
+# ros_gz_bridge config for the D435i on the gates course.
+#
+# One source of truth for the camera topics the vision + planner stack reads.
+# Names pass through 1:1 from the SDF (drone_vision/models/realsense_d435i):
+# whatever the sensor advertises in Gazebo is what ROS sees - no remapping, so
+# nothing drifts. All GZ_TO_ROS: nothing in this stack writes back to Gazebo.
+#
+# camera_info IS bridged (unlike the old depth-only bridge): N1 back-projection
+# and N7 overlay need the real intrinsics that match the rendered frames, not
+# intrinsics hand-derived from <horizontal_fov>.
+#
+# Verify after `colcon build`:  ros2 topic hz /d435i/color/image_raw   (~30)
+
+# /clock FIRST, because everything below depends on it. Gazebo stamps every image
+# with SIM time; MAVROS stamps its TF with WALL time. Bridge the clock and run the
+# stack with use_sim_time:=true (gates_mission.launch.py does) and both land on the
+# same timeline. Without it, `lookup_transform` at an image's own stamp asks the TF
+# buffer for time 132 s while the buffer holds 1.78e9 s, and every frame dies with
+# "extrapolation into the past" -- gate_tracker and voxel_mapper go silent while
+# looking perfectly healthy.
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/d435i/color/image_raw"
+  gz_topic_name: "/d435i/color/image_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/d435i/color/camera_info"
+  gz_topic_name: "/d435i/color/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# depth is float32 metres (SDF format R_FLOAT32 -> ROS 32FC1). Assert the unit
+# at the first frame in N1, never assume mm.
+- ros_topic_name: "/d435i/depth/image_rect_raw"
+  gz_topic_name: "/d435i/depth/image_rect_raw"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/d435i/depth/camera_info"
+  gz_topic_name: "/d435i/depth/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
+# Gazebo already turns the depth image into a cloud. N3 (voxel map) can consume
+# this directly instead of back-projecting the depth image itself.
+- ros_topic_name: "/d435i/depth/points"
+  gz_topic_name: "/d435i/depth/image_rect_raw/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/d435i/imu"
+  gz_topic_name: "/d435i/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS

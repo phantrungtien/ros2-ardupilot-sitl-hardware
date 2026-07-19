@@ -35,6 +35,11 @@ setup(
             'verify_frame = simtofly_mavros_sitl.verify_frame:main',
             'mission_circle = simtofly_mavros_sitl.mission_circle:main',
             'mission_gates = simtofly_mavros_sitl.mission_gates:main',
+            'hold_and_watch = simtofly_mavros_sitl.hold_and_watch:main',
+            'trajectory_follower = simtofly_mavros_sitl.trajectory_follower:main',
+            'verify_n5 = simtofly_mavros_sitl.verify_n5:main',
+            'verify_n6 = simtofly_mavros_sitl.verify_n6:main',
+            'mission_fsm = simtofly_mavros_sitl.mission_fsm:main',
         ],
     },
 )

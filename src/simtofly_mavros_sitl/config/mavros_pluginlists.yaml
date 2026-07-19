@@ -34,6 +34,18 @@
       # crashes on duplicate PARAM_VALUE replies under a slow sim -- see above
       - param
 
+      # SAME abort, different plugin -- observed 2026-07-18:
+      #   RP: seems GCS requesting mission
+      #   RP: scheduling pull after GCS is done
+      #   terminate called ... std::future_error: Promise already satisfied
+      # The mission-ish plugins share the promise-per-request pattern that the
+      # param plugin dies from, so a slow sim kills them the same way. Nothing in
+      # this repo flies a stored mission -- the missions are all GUIDED setpoint
+      # streams -- so denying the three costs nothing we use.
+      - rallypoint
+      - waypoint
+      - geofence
+
       # common
       - actuator_control
       - ftp

@@ -17,6 +17,13 @@
   <depend>mavros_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
+  <!-- gates_mission.launch.py brings up the whole stack, so it needs the packages
+       it runs nodes from and the static_transform_publisher it publishes the
+       camera extrinsic with. -->
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>simtofly_vision</exec_depend>
+  <exec_depend>simtofly_planner</exec_depend>
 
   <!-- Test dependencies -->
   <test_depend>ament_copyright</test_depend>
