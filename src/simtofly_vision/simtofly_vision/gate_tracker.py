@@ -109,19 +109,21 @@ class Tracker:
     def __init__(self):
         self.gates = []
         self._next_id = 0
+        self.merges = 0         # twins folded back together; the node logs it,
+                                # because a clean map cannot otherwise be told
+                                # apart from a map that never split in the first
+                                # place -- and those want different follow-ups.
 
     def observe(self, centre, normal):
         i = associate(centre, self.gates)
         if i is None:
             self.gates.append(Gate(self._next_id, centre, normal))
             self._next_id += 1
-            fresh = self.gates[-1]
         else:
-            fresh = self.gates[i]
-            fresh.update(centre, normal, GATE_ALPHA)
-        self._merge(fresh)
+            self.gates[i].update(centre, normal, GATE_ALPHA)
+        self._merge()
 
-    def _merge(self, fresh):
+    def _merge(self):
         """Fold twin tracks of one ring back into one.
 
         A ring first seen from far away is ranged badly -- depth bias runs along
@@ -139,22 +141,26 @@ class Tracker:
         reason MERGE_DIST > ASSOC_DIST; at equal radii this would never fire on
         the case it exists for.
 
-        The track carrying the NEWEST detection wins its centre and normal; hits
-        only break ties between two tracks the current detection did not touch.
-        Not the better-observed track, and not an average of the two:
+        The track with more hits keeps its identity, and the twin arrives as one
+        more OBSERVATION of it -- same low-pass, same GATE_ALPHA as any detection.
+        Both simpler rules were tried and both failed:
 
-          - averaging folds the stale far-range reading back in, which is the
-            bias that split the track in the first place;
-          - preferring hits deadlocks outright, and the self-check below is the
-            case that proved it. The stale track is the one with history, so it
-            wins every merge, keeps its wrong centre, and swallows each new
-            detection as a track that is created and immediately absorbed. The
-            map then never moves off the bad estimate at all -- worse than the
-            duplicate, because now there is nothing to notice.
+          - hard-replace with the twin's estimate (whichever track is newer)
+            hands a single noisy track the power to teleport a confirmed gate by
+            up to MERGE_DIST. Flown: gate 3 sat at [19.99 1.04 4.08], truth
+            [20 1 4.2], then jumped to [19.93 0.75 4.31] AFTER confirmation, and
+            the drone spent 90 s failing to thread a ring the map had moved.
+          - keeping the established track's centre unchanged deadlocks. The
+            stale track has the history, so it wins every merge, holds its wrong
+            centre, and swallows each new detection as a track created and
+            instantly absorbed -- the map never moves off the bad estimate at
+            all, which is worse than the duplicate because nothing looks wrong.
 
-        Recency is the right signal precisely because the failure is staleness:
-        the freshest track holds the closest, best-ranged view of the ring. It
-        keeps the lower id so the map does not renumber underneath the planner.
+        Low-passing the merge is what escapes both: the stale centre still
+        converges on the truth (a run of good detections drags it there in a
+        handful of merges), while one bad twin can move a gate by at most
+        GATE_ALPHA of the gap and the next real detection pulls it back. The
+        lower id is kept so the map does not renumber underneath the planner.
         """
         while True:
             pair = next((
@@ -166,16 +172,15 @@ class Tracker:
                 None)
             if pair is None:
                 return
-            a, b = self.gates[pair[0]], self.gates[pair[1]]
-            if fresh is a or fresh is b:
-                keep, drop = (a, b) if fresh is a else (b, a)
-            else:
-                keep, drop = sorted((a, b), key=lambda g: -g.hits)
+            keep, drop = sorted((self.gates[pair[0]], self.gates[pair[1]]),
+                                key=lambda g: -g.hits)
             keep.id = min(keep.id, drop.id)
-            keep.hits += drop.hits
+            keep.update(drop.centre, drop.normal, GATE_ALPHA)
+            keep.hits += drop.hits - 1          # update() already counted one
             if keep.hits >= CONFIRM_HITS:
                 keep.state = CONFIRMED
             self.gates.remove(drop)
+            self.merges += 1
 
     def confirmed(self):
         return [g for g in self.gates if g.state == CONFIRMED]
@@ -228,6 +233,7 @@ class GateTracker(Node):
         self.pub = self.create_publisher(PoseArray, '/gate/map', 10)
         self.create_subscription(PoseArray, '/gate/detections', self.on_dets, 10)
         self.create_timer(1.0 / PUBLISH_HZ, self.publish_map)
+        self.said_merges = 0
 
     def on_dets(self, msg):
         if not msg.poses:
@@ -254,6 +260,11 @@ class GateTracker(Node):
             self.tracker.observe(c_map, n_map)
 
     def publish_map(self):
+        if self.tracker.merges != self.said_merges:
+            self.said_merges = self.tracker.merges
+            self.get_logger().info(
+                'gop track trung: {} lan (con {} vong)'.format(
+                    self.said_merges, len(self.tracker.gates)))
         gates = self.tracker.confirmed()
         msg = PoseArray()
         msg.header.stamp = self.get_clock().now().to_msg()
@@ -329,6 +340,25 @@ def _selfcheck():
     assert np.linalg.norm(got.centre - [5.0, 0, 3.5]) < 0.1, \
         'track nhieu hit hon phai thang, khong lay trung binh: {}'.format(got.centre)
     assert len(tr5.confirmed()) == 1
+    assert tr5.merges >= 1, 'khong gop lan nao ma van ra 1 track?'
+
+    # --- ... and a noisy twin cannot TELEPORT a gate that is already confirmed.
+    # Flown, with the merge hard-replacing instead of low-passing: gate 3 jumped
+    # from [19.99 1.04 4.08] to [19.93 0.75 4.31] after confirmation and the
+    # drone spent 90 s failing to thread a ring that was no longer where the map
+    # said. The bound is what makes a bad twin survivable: at most GATE_ALPHA of
+    # the gap, and the next real detection pulls it back.
+    tr7 = Tracker()
+    truth = np.array([20.0, 1.0, 4.2])
+    for _ in range(20):
+        tr7.observe(truth, [1, 0, 0])
+    before = tr7.gates[0].centre.copy()
+    tr7.observe(truth + [1.5, 0, 0], [1, 0, 0])       # one bad detection, 1.5 m out
+    jump = np.linalg.norm(tr7.gates[0].centre - before)
+    assert len(tr7.gates) == 1 and jump < 0.5, 'twin nhieu day vong di {:.2f} m'.format(jump)
+    for _ in range(6):
+        tr7.observe(truth, [1, 0, 0])
+    assert np.linalg.norm(tr7.gates[0].centre - truth) < 0.1, 'khong keo lai duoc'
 
     # ... and two REAL rings at the course's tightest spacing never fuse
     tr6 = Tracker()
