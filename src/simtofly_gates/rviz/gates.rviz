@@ -1,0 +1,166 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Duong da bay1
+        - /Ke hoach N41
+      Splitter Ratio: 0.5
+    Tree Height: 700
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Name: root
+  Global Options:
+    Background Color: 38; 38; 38
+    Fixed Frame: map
+    Frame Rate: 30
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 1
+      Plane Cell Count: 30
+      Color: 80; 80; 80
+      Alpha: 0.4
+      Reference Frame: map
+
+    # The flown track. MAVROS publishes odom BEST_EFFORT, and an RViz display
+    # left on the default Reliable subscribes to nothing and says nothing about
+    # why -- the same QoS trap that has bitten every node in this stack.
+    # Keep: 5000 at 30 Hz is ~2.8 minutes of history, longer than a course.
+    - Class: rviz_default_plugins/Odometry
+      Name: Duong da bay
+      Enabled: true
+      Topic:
+        Value: /mavros/local_position/odom
+        Depth: 100
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+      Keep: 5000
+      Position Tolerance: 0.05
+      Angle Tolerance: 0.3
+      Shape:
+        Value: Arrow
+        Alpha: 1
+        Color: 255; 170; 0
+        Shaft Length: 0.12
+        Shaft Radius: 0.02
+        Head Length: 0.06
+        Head Radius: 0.04
+      Covariance:
+        Value: false
+
+    # What N4 wants the drone to fly next. Latched TRANSIENT_LOCAL, so the
+    # display must match or a late-started RViz sees an empty plan forever.
+    - Class: rviz_default_plugins/Path
+      Name: Ke hoach N4
+      Enabled: true
+      Topic:
+        Value: /planner/path
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+      Color: 0; 220; 255
+      Line Style: Lines
+      Alpha: 1
+
+    # The rings N2 believes in. +Z of each pose is the fly-through normal.
+    - Class: rviz_default_plugins/PoseArray
+      Name: Vong da xac nhan
+      Enabled: true
+      Topic:
+        Value: /gate/map
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+      Shape: Axes
+      Axes Length: 0.75
+      Axes Radius: 0.05
+
+    # Raw per-frame detections, off by default: useful when a ring will not
+    # confirm, noise otherwise.
+    - Class: rviz_default_plugins/PoseArray
+      Name: Phat hien tho (N1)
+      Enabled: false
+      Topic:
+        Value: /gate/detections
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+      Shape: Arrow (Flat)
+      Color: 255; 25; 0
+      Alpha: 0.5
+
+    # The occupancy grid N3 builds. Heavy: thousands of cubes at 2 Hz, so it
+    # starts disabled -- turn it on when a plan looks wrong, not while flying.
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Luoi voxel (N3)
+      Enabled: false
+      Topic:
+        Value: /mapping/voxels
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Names: true
+      Show Axes: true
+      Show Arrows: false
+      Marker Scale: 0.6
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+
+    # N7's overlay: the plan drawn back onto the colour image.
+    - Class: rviz_default_plugins/Image
+      Name: Overlay N7
+      Enabled: true
+      Topic:
+        Value: /plan_overlay/image
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+      Max Value: 1
+      Min Value: 0
+      Normalize Range: true
+
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      # Looking down the course: it runs +X from (5,0) to (20,1), so sit back
+      # along -X and above it.
+      Focal Point:
+        X: 12
+        Y: 0
+        Z: 3.5
+      Distance: 26
+      Yaw: 0.1
+      Pitch: 0.42
+      Near Clip Distance: 0.01
+      Target Frame: map
+    Saved: ~
+
+Window Geometry:
+  Height: 900
+  Width: 1500
+  Displays:
+    collapsed: false
+  Overlay N7:
+    collapsed: false

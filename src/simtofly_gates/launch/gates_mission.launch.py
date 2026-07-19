@@ -29,6 +29,8 @@ gated by READINESS not timers:
                    ends the flight. See the note on FSM_CMD.
  11. PlanOverlay - plan_overlay (N7): draws the live plan onto the colour image
                    -> /plan_overlay/image. Always on; it only reads.
+ 12. RViz        - only with `rviz:=true`: rviz/gates.rviz, which draws the track
+                   the drone has actually flown against the plan it was given.
 
 No arguments needed -- the defaults fly the whole course:
 
@@ -232,6 +234,14 @@ FSM_CMD = (ROS_SETUP + WAIT_MAVROS
 # only ever reads and publishes its own topic, so it cannot disturb a flight.
 OVERLAY_CMD = (ROS_SETUP + WAIT_MAVROS
                + 'ros2 run simtofly_gates plan_overlay' + SIM_TIME)
+# RViz with rviz/gates.rviz: the flown track (orange arrows out of MAVROS odom,
+# 5000 kept), N4's plan, the confirmed rings, and N7's overlay. OPT-IN because
+# RViz is not free -- the voxel grid alone is thousands of cubes, and this box
+# already runs the sim at RTF ~0.55.
+RVIZ_CMD = (ROS_SETUP + WAIT_MAVROS +
+            'CFG=$(ros2 pkg prefix simtofly_gates)'
+            '/share/simtofly_gates/rviz/gates.rviz\n'
+            'rviz2 -d $CFG' + SIM_TIME)
 
 
 # Printed the moment the window's process exits. Without it the window just sits
@@ -314,4 +324,11 @@ def generate_launch_description():
         gnome_term('MissionFSM', FSM_CMD,
                    condition=IfCondition(LaunchConfiguration('fsm'))),
         gnome_term('PlanOverlay', OVERLAY_CMD),
+        DeclareLaunchArgument(
+            'rviz', default_value='false',
+            description='open RViz on rviz/gates.rviz to watch the drone draw '
+                        'its own track next to the plan it is following.',
+        ),
+        gnome_term('RViz', RVIZ_CMD,
+                   condition=IfCondition(LaunchConfiguration('rviz'))),
     ])
