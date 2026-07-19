@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'person_follow = simtofly_vision.person_follow_reid:main',
             'gate_detect = simtofly_vision.gate_detect:main',
+            'gate_tracker = simtofly_vision.gate_tracker:main',
         ],
     },
 )

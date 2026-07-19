@@ -1,165 +1,124 @@
 #!/usr/bin/env python3
-"""Gate (racing ring) detector -- the VISION half of the fly-through mission.
+"""N1 gate_detector -- the VISION node of the fly-through stack (image only).
 
-Reads the drone's nose-mounted RealSense D435i (model://iris_with_d435i in
-~/gz_ws/src/drone_vision) and, every frame, finds the orange ring, fits an
-ellipse to it, and ranges it with the DEPTH stream. Publishes the ring geometry
-on /gate/obs; the CONTROL half (simtofly_mavros_sitl/mission_gates.py) flies
-through it.
+One frame in, one 3D answer out: find the orange ring in COLOUR, sample DEPTH on
+its TUBE (never the hole), and recover the ring's 3D CENTRE, NORMAL and RADIUS by
+geometry -- a plane through the rim points, then a circle in that plane. Publishes
+a geometry_msgs/PoseArray on /gate/detections; the tracker / Dijkstra planner
+(the AI half, built later) consume it.
 
-Two streams, two transports -- not an accident:
-  colour  848x480 RGB, hfov 69 deg.  Arrives as H264/RTP on UDP 5600, because the
-          colour sensor still carries ardupilot_gazebo's GstCameraPlugin. Read via
-          a gst-launch subprocess: the OpenCV build on this machine was compiled
-          WITHOUT GStreamer (cv2.getBuildInformation -> "GStreamer: NO"), so
-          cv2.VideoCapture(CAP_GSTREAMER) is unavailable.
-  depth   848x480 float32 metres, hfov 87 deg. A plain Gazebo topic, bridged into
-          ROS by ros_gz_bridge (see gates_mission.launch.py) and subscribed here.
+This is PERCEPTION ONLY. It does not command the drone, does not read MAVROS, does
+not touch TF. Output stays in the DEPTH optical frame (d435i_depth_optical_frame,
+the frame the points were back-projected in). Transforming to `map` is the
+tracker's job -- the plan keeps exactly one place that does frame maths, and it is
+not here.
 
-Both sensors declare 30 Hz, but the sim does not deliver it: measured, depth lands
-at ~15 Hz (four 848x480 renders per frame is more than this machine does in real
-time, and the GUI ImageDisplay panels make it worse). So /gate/obs is a ~15 Hz
-range at best, and mission_gates is built for that -- its COMMIT phase stops using
-vision entirely and flies a frozen world point off /mavros/local_position, which is
-exactly the moment a slow, stale camera would otherwise hurt most.
+  PoseArray /gate/detections:
+    header.stamp    = the colour frame's stamp (so a later TF lookup is exact)
+    header.frame_id = 'd435i_depth_optical_frame'
+    poses[i]        = one detected ring:
+        position    = ring centre (metres, depth optical frame)
+        orientation = quaternion whose LOCAL +Z is the ring normal, pointing along
+                      the fly-through direction (away from the camera). +X/+Y roll
+                      is arbitrary -- only the +Z axis carries meaning.
 
-Detector: deliberately CLASSICAL (HSV threshold -> largest contour ->
-cv2.fitEllipse). The ring is a solid bright-orange hoop, so this pins the
-ellipse -- including its "deformation" (minor/major axis ratio, the head-on
-vs oblique cue) -- with no trained model, on CPU, at stream rate. To swap in a
-deep-learning detector, replace detect_ring() ONLY; the /gate/obs contract and
-the depth ranging both keep working off the contour it returns.
-# ponytail: classical does exactly what DL would here (find one orange ellipse);
-# DL needs a gate-trained model + dataset that don't exist yet.
+Two sensors, one geometry problem:
+  colour  848x480 rgb8, hfov 69 deg -> the ring is a bright orange hoop, so a
+          classical HSV + fitEllipse pins it (incl. the head-on vs oblique cue) with
+          no trained model, on CPU, at stream rate.
+  depth   848x480 float32 METRES, hfov 87 deg -> ranges the tube. Different focal
+          and a 15 mm baseline from colour, so colour pixels are MAPPED into depth
+          pixels before reading (color_px_to_depth_px), never assumed aligned.
+Both arrive as ROS topics from ros_gz_bridge (config/d435i_bridge.yaml) and are
+time-synced here with message_filters. The old build read colour over gst/UDP;
+the bridge makes that unnecessary and gives us a shared stamp for free.
 
-/gate/obs = Float32MultiArray([visible, cx_off, cy_off, fill, defo, dist]):
-  visible : 1.0 if a ring was found this frame else 0.0
-  cx_off  : ring-centre horizontal offset, -1 (left)  .. +1 (right)
-  cy_off  : ring-centre vertical   offset, -1 (top)   .. +1 (bottom)
-  fill    : ellipse major axis / image width  (apparent size ~ closeness)
-  defo    : minor/major axis ratio  (1.0 = head-on circle -> 0 = edge-on)
-  dist    : metres to the ring PLANE (depth stream; mono fallback -- see range())
+Detector stays CLASSICAL on purpose. To swap in a deep-learning ring detector,
+replace detect_rings() ONLY -- return the same (contour, ellipse) list and the
+whole 3D localisation below is unchanged.
+# ponytail: classical finds one orange ellipse as well as DL would, with no model
+# or dataset to train; the 3D maths, not the 2D box, is where the value is.
 
 Run:  ros2 run simtofly_vision gate_detect [--gui]
-(Gazebo with gates_course.sdf must be up, and the depth bridge running, so both
-streams exist. gates_mission.launch.py starts all of it.)
+      python3 gate_detect.py --selfcheck   # no camera, no ROS
+(Gazebo with gates_course.sdf + the d435i bridge must be up. gates_mission.launch.py
+starts all of it.)
 """
 import math
 import os
-import shlex
-import subprocess
+import time
 
 import cv2
 import numpy as np
 import rclpy
+from geometry_msgs.msg import Pose, PoseArray
+from message_filters import ApproximateTimeSynchronizer, Subscriber
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray
 
-# ----- camera geometry -- every number below is read off realsense_d435i/model.sdf.
-# Nothing here is a round catalogue figure; keep them in step with that file.
-W, H = 848, 480                     # both streams, same size and principal point
-HFOV_COLOR = 1.204277               # rad (69 deg)
-HFOV_DEPTH = 1.518436               # rad (87 deg)
+# ----- camera geometry -- read off realsense_d435i/model.sdf, the single source
+# of truth. These reproduce what the model's camera_info publishes (verified live:
+# colour K = fx=fy=616.92, cx=424, cy=240), so we skip a camera_info subscription
+# and its extra sync -- the constant IS the published intrinsic.
+W, H = 848, 480                      # both streams, same size and principal point
+HFOV_COLOR = 1.204277                # rad (69 deg)
+HFOV_DEPTH = 1.518436                # rad (87 deg)
 CX, CY = W / 2.0, H / 2.0
+FX_COLOR = CX / math.tan(HFOV_COLOR / 2.0)   # 616.92
+FX_DEPTH = CX / math.tan(HFOV_DEPTH / 2.0)   # 446.80
 
-# fx = (W/2) / tan(hfov/2). Comes out 616.9 (colour) / 446.9 (depth), which is what
-# the model's own camera_info publishes -- the SDF is the single source of truth.
-FX_COLOR = CX / math.tan(HFOV_COLOR / 2.0)
-FX_DEPTH = CX / math.tan(HFOV_DEPTH / 2.0)
-
-# Colour sits 15 mm to the LEFT of depth (Intel's own extrinsic; camera_link IS the
-# depth/left-IR origin). Purely lateral, so it shifts u but never v, and never Z.
-COLOR_TO_DEPTH_Y = 0.015            # m
+# Colour sits 15 mm to the LEFT of depth (camera_link IS the depth/left-IR origin).
+# Purely lateral: shifts u, never v, never Z.
+COLOR_TO_DEPTH_Y = 0.015             # m
 
 # Depth clip from the SDF, plus the min-Z the REAL D435i cannot see inside. The sim
-# happily returns depth at 0.17 m; hardware does not, so reject it here instead of
-# flying on a number the real camera would never give us.
-DEPTH_MIN = 0.195                   # m
-DEPTH_MAX = 10.0                    # m (SDF <far>)
-DEPTH_TIMEOUT = 0.5                 # s; older depth frame -> fall back to mono
-
-UDP_PORT = 5600
-DEPTH_TOPIC = '/d435i/depth/image_rect_raw'
-# GstCameraPlugin derives its enable topic as <sensor topic> + "/enable_streaming"
-# (GstCameraPlugin.cc:221), and the colour sensor names its own topic in the SDF --
-# so unlike the old gimbal camera this does NOT embed the world name. Confirmed
-# against a running sim, which prints:
-#   GstCameraPlugin: enable topic [/d435i/color/image_raw/enable_streaming]
-# Override with GATE_ENABLE_TOPIC if the model's <topic> ever changes.
-ENABLE_TOPIC = os.environ.get(
-    'GATE_ENABLE_TOPIC', '/d435i/color/image_raw/enable_streaming')
-
-# gst pipeline = the user's known-good receiver, but ending in a raw-BGR fdsink
-# (read from stdout) instead of autovideosink. It is pinned to the sensor's OWN
-# 848x480: rescaling to 640x480 would squash X by 0.755, turning a head-on circle
-# into an ellipse and corrupting both `defo` and the major axis we range by.
-GST = ('gst-launch-1.0 -q udpsrc port={p} '
-       "caps=application/x-rtp,media=video,clock-rate=90000,"
-       "encoding-name=H264 ! rtph264depay ! avdec_h264 ! videoconvert "
-       '! videoscale ! video/x-raw,format=BGR,width={w},height={h} '
-       '! fdsink sync=false').format(p=UDP_PORT, w=W, h=H)
+# returns depth at 0.17 m; hardware does not, so reject it rather than trust it.
+DEPTH_MIN = 0.195                    # m
+DEPTH_MAX = 10.0                     # m (SDF <far>)
 
 # ----- orange ring HSV band (OpenCV H is 0..180) -----
-# Ring material is rgb(1, 0.45, 0), emissive -> renders bright orange.
-# CALIBRATE if the mask misses the ring (widen the band / raise MIN_AREA).
-# ponytail: sim-tuning knob, expect to nudge these on the first run.
+# Ring material rgb(1, 0.45, 0), emissive -> bright orange. CALIBRATE if the mask
+# misses the ring (widen the band / raise MIN_AREA).
+# ponytail: sim-tuning knob, expect to nudge on the first live run.
 ORANGE_LO = np.array((3, 80, 80), np.uint8)
 ORANGE_HI = np.array((25, 255, 255), np.uint8)
-MIN_AREA = 150                      # px^2, ignore specks
+MIN_AREA = 150                       # px^2, ignore specks
 _KERNEL = np.ones((5, 5), np.uint8)
+_CROSS3 = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))   # see ring_pixels
 
-# Shape gate: the ring's OUTER contour is an ellipse, so its area matches the
-# area of the fitted ellipse. A stray orange blob (terrain, horizon haze, sun)
-# does not -- and un-gated, one such blob hijacked the whole mission: the
-# controller "saw a ring", stopped its search sweep and flew off at the blob.
-MIN_DEFO = 0.25                     # minor/major; below this = sliver, not a ring
-FIT_LO, FIT_HI = 0.75, 1.25         # contourArea / ellipse area must be ~1.0
+# Shape gate: the ring's outer contour is an ellipse, so contourArea ~ ellipse area.
+# A stray orange blob is not -- and un-gated, one such blob once hijacked a mission.
+MIN_DEFO = 0.25                      # minor/major; below this = sliver, not a ring
+FIT_LO, FIT_HI = 0.75, 1.25          # contourArea / ellipse area must be ~1.0
 
-# ----- ring, from gate_ring/model.sdf -----
-RING_DIAM_M = 0.982                 # OUTER diameter = 2*(0.431 tube centreline + 0.06 tube)
-RING_TUBE_CL = 0.431                # tube centreline radius -- this circle IS the ring plane
-RING_TUBE_R = 0.06                  # tube radius
+# ----- ring, from gate_ring/model.sdf (the CURRENT big ring, not the old 0.43 one) --
+RING_CL_R = 0.83                     # tube CENTRELINE radius -- this circle IS the plane
+RING_TUBE_R = 0.08                   # tube radius
+RING_OUTER_DIAM = 2.0 * (RING_CL_R + RING_TUBE_R)   # 1.82 m, the painted outer edge
+# What fitEllipse actually tracks: detection keys on the HOLE (see detect_rings),
+# so the ellipse spans the INNER diameter. Sizing range off the outer diameter here
+# would over-estimate every range by 1.82/1.50 = 21%.
+RING_IN_DIAM = 2.0 * (RING_CL_R - RING_TUBE_R)      # 1.50 m
 
-# Depth sees the tube's NEAR SURFACE; the ring PLANE is where the tube's centreline is.
-# The gap between them is NOT the tube radius, because the tube is a round cylinder, not
-# a flat face: at lateral offset u from the tube's axis the visible surface lies
-# sqrt(r^2 - u^2) in front of the plane, and image pixels are spread uniformly over
-# u in [-r, r]. The MEDIAN of sqrt(r^2 - u^2) is r*sqrt(3)/2 -- 0.866 r, not r.
-#
-# Using r flat (0.060) overshoots by 8 mm, and that showed up in a ground-truth rig as a
-# dead-constant +0.010 m at every range from 1.2 m to 5 m. Constant, not scaled: the
-# signature of a geometry mistake rather than noise.
-TUBE_TO_PLANE = RING_TUBE_R * math.sqrt(3.0) / 2.0      # 0.0520 m
-MIN_DEPTH_PX = 20                   # need this many valid ring pixels to trust the median
+# Depth sees the tube's NEAR surface; the ring plane is at the centreline, 0.866*r
+# further back (median of sqrt(r^2-u^2) over a round tube, not the flat r).
+TUBE_TO_PLANE = RING_TUBE_R * math.sqrt(3.0) / 2.0   # 0.0693 m
+RADIUS_TOL = 0.20                    # |fitted r - RING_CL_R| must be under this
 
+# ----- localisation thresholds -----
+MIN_RIM_PTS = 30                     # valid back-projected rim points to even try a fit
+MAX_PLANE_RMS = 0.06                 # m; plane fit worse than this -> reject
+MIN_CONF = 0.35                      # publish only above this
 
-def enable_streaming():
-    """Ask the Gazebo camera sensor to start streaming (best-effort, once)."""
-    cmd = ['gz', 'topic', '-t', ENABLE_TOPIC, '-m', 'gz.msgs.Boolean',
-           '-p', 'data: 1']
-    try:
-        subprocess.run(cmd, timeout=5,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print('[gate_detect] enable_streaming -> {}'.format(ENABLE_TOPIC))
-    except Exception as e:
-        print('[gate_detect] enable_streaming failed ({}); is Gazebo up? If the '
-              'Gazebo log shows a different "enable topic", set GATE_ENABLE_TOPIC.'
-              .format(e))
+DEPTH_FRAME = 'd435i_depth_optical_frame'
+COLOR_TOPIC = '/d435i/color/image_raw'
+DEPTH_TOPIC = '/d435i/depth/image_rect_raw'
 
 
-def read_exact(stream, n):
-    """Read exactly n bytes from a pipe (fdsink may deliver in chunks)."""
-    buf = bytearray()
-    while len(buf) < n:
-        chunk = stream.read(n - len(buf))
-        if not chunk:
-            return None
-        buf += chunk
-    return bytes(buf)
-
-
+# =========================================================================
+# 2D detection (colour)
+# =========================================================================
 def is_ring(contour, el):
-    """True if the contour is actually ellipse-shaped (i.e. a ring, not a blob)."""
+    """True if the contour is ellipse-shaped (a ring), not a blob."""
     (a1, a2) = el[1]
     major, minor = max(a1, a2), min(a1, a2)
     if major < 1e-6 or minor / major < MIN_DEFO:
@@ -168,61 +127,109 @@ def is_ring(contour, el):
     return FIT_LO <= fit <= FIT_HI
 
 
-def detect_ring(frame):
-    """Largest orange ellipse -> (contour, ellipse, orange_mask) or None.
+def detect_rings(rgb):
+    """All rings in the frame -> list of (hole_contour, ellipse, mask).
 
-    Swap THIS function for a deep-learning detector (e.g. YOLOv8-seg mask ->
-    fitEllipse); return the same triple and everything downstream is unchanged.
+    Detection keys on each ring's HOLE, not its outer edge. On a course you see
+    several gates at once and their painted annuli OVERLAP in the image; the outer
+    contours then merge into one connected blob. Measured on a real frame with four
+    gates in view, RETR_EXTERNAL returned exactly ONE contour for all four -- and
+    that merged blob still passed the ellipse test (b/a 0.73, fit 0.95), so N1
+    handed localise() a giant bogus ellipse whose radius check then failed. Result:
+    four clearly visible gates, zero detections, and nothing in the log to say why.
+
+    The holes do not merge. Same frame, RETR_CCOMP found the four holes cleanly
+    (fit 0.96-1.00 each), because a hole only closes up if a nearer ring covers it
+    completely -- at which point that gate genuinely is not visible. This is the
+    plan's edge case #5, and keying on holes is what handles it.
+
+    Swap THIS for a DL detector (return the same list) and 3D localisation is
+    unchanged. `rgb` is an RGB uint8 image (ROS rgb8), so convert RGB->HSV.
     """
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
     mask = cv2.inRange(hsv, ORANGE_LO, ORANGE_HI)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, _KERNEL)
-    cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
-                               cv2.CHAIN_APPROX_SIMPLE)
-    rings = []
-    for c in cnts:
-        if len(c) < 5 or cv2.contourArea(c) < MIN_AREA:
+    # RETR_CCOMP gives two levels: [0] outer boundaries, [1] the holes inside them.
+    # hierarchy[i][3] >= 0 means "contour i has a parent", i.e. i IS a hole.
+    cnts, hier = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    if hier is None:
+        return []
+    out = []
+    for c, h in zip(cnts, hier[0]):
+        if h[3] < 0 or len(c) < 5 or cv2.contourArea(c) < MIN_AREA:
             continue
         el = cv2.fitEllipse(c)
         if is_ring(c, el):
-            rings.append((cv2.contourArea(c), c, el))
-    if not rings:
-        return None
-    _, contour, el = max(rings, key=lambda r: r[0])
-    return contour, el, mask
+            out.append((c, el, mask))
+    return out
 
 
-def ring_pixels(contour, orange_mask):
-    """The ring's ANNULUS pixels: orange AND inside the outer contour.
+# How far out of the hole to reach for annulus pixels, as a fraction of the hole's
+# minor axis. The tube is 0.08 m thick on a 1.5 m hole, so the painted band is
+# ~11% of the hole diameter; 0.20 covers it with margin at any viewing angle while
+# staying well short of a neighbouring ring.
+ANNULUS_REACH = 0.20
 
-    Filling the contour alone would include the HOLE, and the hole is exactly what
-    we must not sample -- depth there reads whatever is behind the gate.
+
+def ring_pixels(hole_contour, mask):
+    """The ring's ANNULUS pixels: orange, immediately around the HOLE (ys, xs).
+
+    Grow the filled hole outward and intersect with the orange mask. Only the ring
+    that owns this hole lies in that band, so overlapping gates do not contaminate
+    each other -- and the hole itself is excluded, which matters because the depth
+    inside it belongs to whatever is BEHIND the gate. That is the one place we must
+    never sample (plan par. 2.1).
     """
-    disc = np.zeros(orange_mask.shape, np.uint8)
-    cv2.drawContours(disc, [contour], -1, 255, -1)
-    return np.nonzero(cv2.bitwise_and(disc, orange_mask))     # (ys, xs)
+    (_, axes, _) = cv2.fitEllipse(hole_contour)
+    reach = max(2, int(round(ANNULUS_REACH * min(axes))))
+
+    # Grow inside a crop, with an ITERATED 3x3 cross rather than one big
+    # structuring element. A (2*reach+1)^2 MORPH_ELLIPSE is not separable, so it
+    # costs O(reach^2) per pixel of the WHOLE frame, per ring, per frame -- and
+    # reach scales with the ring's apparent size, so it peaks exactly as the
+    # drone closes on the gate and the control loop needs the CPU. Measured on a
+    # 640x480 frame: 59 ms per ring at reach 80, across 20 OpenCV threads. That
+    # starved the SITL host badly enough to produce PreArm gyro/GPS failures and
+    # real tracking-guard trips. This version measures 0.9 ms.
+    #
+    # Iterating a cross gives a DIAMOND, not a disc, so the band reaches slightly
+    # less far diagonally. That cannot lose annulus pixels here: reach is 20% of
+    # the hole diameter while the painted tube is only ~11% of it, so the orange
+    # mask -- not the band's outer edge -- is what bounds the result. Verified on
+    # synthetic rings at three scales: the returned pixel set is IDENTICAL to the
+    # disc's, to the pixel. Being a subset of the disc, it also cannot reach
+    # further into a neighbouring ring than the old code did.
+    x, y, w, h = cv2.boundingRect(hole_contour)
+    pad = reach + 1
+    x0, y0 = max(0, x - pad), max(0, y - pad)
+    x1, y1 = min(mask.shape[1], x + w + pad), min(mask.shape[0], y + h + pad)
+    filled = np.zeros((y1 - y0, x1 - x0), np.uint8)
+    cv2.drawContours(filled, [hole_contour], -1, 255, -1, offset=(-x0, -y0))
+    band = cv2.subtract(cv2.dilate(filled, _CROSS3, iterations=reach), filled)
+    ys, xs = np.nonzero(cv2.bitwise_and(band, mask[y0:y1, x0:x1]))
+    return ys + y0, xs + x0                    # back to full-frame coordinates
 
 
 def range_from_mono(el):
-    """Pinhole range off the known ring size: dist = fx * D / major_axis_px.
+    """Pinhole range off the known INNER diameter: dist = fx * D / major_px.
 
-    The ellipse major axis is the least-foreshortened diameter, so it stays ~ the
-    true ring diameter even on an oblique approach. fitEllipse tracks the OUTER
-    edge, so RING_DIAM_M is the outer diameter and this lands on the ring PLANE.
+    `el` is the HOLE's ellipse (see detect_rings), so the diameter in play is the
+    hole's, not the painted outer edge. The ellipse major axis is the
+    least-foreshortened diameter, so it tracks the true size even on an oblique
+    approach. Only used to seed the tiny baseline term in the colour->depth
+    mapping; the geometry answer comes from depth.
     """
     major = max(el[1])
-    return FX_COLOR * RING_DIAM_M / major if major > 1e-6 else 0.0
+    return FX_COLOR * RING_IN_DIAM / major if major > 1e-6 else 0.0
 
 
 def color_px_to_depth_px(xs, ys, z):
-    """Map colour pixels -> depth pixels. Both streams are 848x480 with the same
-    principal point, so only two things differ: the focal (69 vs 87 deg) and the
-    15 mm lateral baseline.
+    """Colour pixels -> depth pixels. Same size and principal point, so only the
+    focal (69 vs 87 deg) and the 15 mm lateral baseline differ.
 
-    The baseline term needs a range to divide by; `z` is the mono estimate. That is
-    fine and not circular: the whole term is worth only ~5 px at 1.3 m and ~1 px at
-    5 m, so an error in `z` enters at second order. The focal term -- which does the
-    real work -- needs no range at all.
+    The baseline term needs a range `z` (the mono estimate); it is worth ~5 px at
+    1.3 m and ~1 px at 5 m, so a small error in z enters at second order. The focal
+    term, which does the real work, needs no range.
     """
     k = FX_DEPTH / FX_COLOR
     u = k * (xs - CX) - (FX_DEPTH * COLOR_TO_DEPTH_Y / z) + CX
@@ -231,241 +238,373 @@ def color_px_to_depth_px(xs, ys, z):
             np.clip(v, 0, H - 1).astype(np.int32))
 
 
-def range_from_depth(contour, orange_mask, depth, mono):
-    """Median depth over the ring's annulus, or None if depth cannot answer.
+# =========================================================================
+# 3D localisation (depth) -- the core of N1
+# =========================================================================
+def backproject(u, v, z):
+    """Depth pixels (u,v) + range z -> 3D points in the depth OPTICAL frame.
 
-    Sampling the ring's TUBE (not its centre) is the whole point: the centre is the
-    hole, and depth there reads whatever is behind the gate. + TUBE_TO_PLANE then
-    moves the answer from "the metal I can see" to "the plane I must fly through".
+    Optical convention: X right, Y down, Z forward. fx=fy=FX_DEPTH, principal point
+    (CX,CY). Returns an (N,3) array.
     """
-    if depth is None:
-        return None
-    ys, xs = ring_pixels(contour, orange_mask)
-    if len(xs) < MIN_DEPTH_PX:
-        return None
-    u, v = color_px_to_depth_px(xs.astype(np.float64), ys.astype(np.float64), mono)
-    d = depth[v, u]
-    d = d[np.isfinite(d) & (d >= DEPTH_MIN) & (d <= DEPTH_MAX)]
-    if len(d) < MIN_DEPTH_PX:
-        return None
-    return float(np.median(d)) + TUBE_TO_PLANE
+    x = (u - CX) * z / FX_DEPTH
+    y = (v - CY) * z / FX_DEPTH
+    return np.column_stack((x, y, z))
 
 
-def observe(frame, depth=None):
-    """Frame (+ latest depth image) -> (obs_6_tuple, ellipse, info).
+def fit_plane(pts):
+    """Least-squares plane through pts (N,3), with ONE round of outlier rejection.
 
-    `info` reports which range actually went out on /gate/obs -- 'depth' or 'MONO'
-    -- plus both candidate values. Do NOT infer the source from "a depth frame was
-    available": range_from_depth() can still bail (too few valid ring pixels, ring
-    past the 10 m clip) and silently fall back, which is exactly how a broken depth
-    path hides in plain sight.
+    Returns (centroid, normal, u_hat, v_hat, rms, inlier_mask). u_hat/v_hat span the
+    plane (for the circle fit). rms is the inlier RMS distance to the plane.
+    # ponytail: SVD + one 2-sigma trim, not full RANSAC. The sim's depth edges are
+    # mild; if real hardware noise breaks this, RANSAC drops in behind fit_plane's
+    # signature with nothing downstream to change.
     """
-    found = detect_ring(frame)
-    if found is None:
-        return [0.0] * 6, None, ('none', 0.0, 0.0)
-    contour, el, orange_mask = found
-    (cx, cy), (a1, a2), _ = el
-    major, minor = max(a1, a2), min(a1, a2)
+    c0 = pts.mean(axis=0)
+    _, _, vh = np.linalg.svd(pts - c0, full_matrices=False)
+    n = vh[2]
+    d = (pts - c0) @ n
+    keep = np.abs(d) < 2.0 * (d.std() + 1e-9)
+    if keep.sum() >= 3 and keep.sum() < len(pts):
+        pts = pts[keep]
+        c0 = pts.mean(axis=0)
+        _, _, vh = np.linalg.svd(pts - c0, full_matrices=False)
+        n = vh[2]
+        d = (pts - c0) @ n
+    else:
+        keep = np.ones(len(pts), bool)
+    rms = float(np.sqrt(np.mean(d[np.abs(d) < 2.0 * (d.std() + 1e-9)] ** 2))) \
+        if len(d) else 1e9
+    return c0, n / (np.linalg.norm(n) + 1e-12), vh[0], vh[1], rms, keep
 
+
+def fit_circle(pts, c0, u_hat, v_hat):
+    """Kasa algebraic circle fit in the plane -> (centre_3d, radius, rms).
+
+    Project pts onto (u_hat, v_hat), fit centre+radius by least squares, lift the
+    centre back to 3D. rms is the radial residual.
+    """
+    p = pts - c0
+    u = p @ u_hat
+    v = p @ v_hat
+    A = np.column_stack((2 * u, 2 * v, np.ones_like(u)))
+    b = u * u + v * v
+    (uc, vc, cc), *_ = np.linalg.lstsq(A, b, rcond=None)
+    r = math.sqrt(max(cc + uc * uc + vc * vc, 0.0))
+    rms = float(np.sqrt(np.mean((np.hypot(u - uc, v - vc) - r) ** 2)))
+    centre = c0 + uc * u_hat + vc * v_hat
+    return centre, r, rms
+
+
+def quat_from_zaxis(n):
+    """Quaternion (x,y,z,w) whose local +Z maps to unit vector n. Roll is free."""
+    z = n / (np.linalg.norm(n) + 1e-12)
+    # any axis not parallel to z gives a valid frame
+    a = np.array([1.0, 0.0, 0.0]) if abs(z[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
+    x = np.cross(a, z)
+    x /= np.linalg.norm(x) + 1e-12
+    y = np.cross(z, x)
+    m = np.column_stack((x, y, z))          # rotation matrix, columns = new axes
+    t = np.trace(m)
+    if t > 0:
+        s = math.sqrt(t + 1.0) * 2
+        qw = 0.25 * s
+        qx = (m[2, 1] - m[1, 2]) / s
+        qy = (m[0, 2] - m[2, 0]) / s
+        qz = (m[1, 0] - m[0, 1]) / s
+    else:                                   # numerically safer branch for t<=0
+        i = int(np.argmax(np.diag(m)))
+        j, k = (i + 1) % 3, (i + 2) % 3
+        s = math.sqrt(m[i, i] - m[j, j] - m[k, k] + 1.0) * 2
+        q = [0.0, 0.0, 0.0]
+        q[i] = 0.25 * s
+        q[j] = (m[j, i] + m[i, j]) / s
+        q[k] = (m[k, i] + m[i, k]) / s
+        qw = (m[k, j] - m[j, k]) / s
+        qx, qy, qz = q
+    return qx, qy, qz, qw
+
+
+def localise(contour, el, mask, depth):
+    """One ring's 2D detection + depth image -> (centre, normal, radius, conf) or None.
+
+    centre/normal are in the depth optical frame; conf in [0,1]. None means depth
+    could not answer for this ring (too few valid points, bad plane, wrong radius).
+    """
+    ys, xs = ring_pixels(contour, mask)
+    if len(xs) < MIN_RIM_PTS:
+        return None
     mono = range_from_mono(el)
-    depth_m = range_from_depth(contour, orange_mask, depth, mono)
-    src = 'depth' if depth_m is not None else 'MONO'
-    dist = mono if depth_m is None else depth_m
-    return ([1.0,
-             (cx - CX) / CX,
-             (cy - CY) / CY,
-             major / W,
-             (minor / major) if major > 1e-6 else 0.0,
-             dist],
-            el,
-            (src, depth_m if depth_m is not None else float('nan'), mono))
+    u, v = color_px_to_depth_px(xs.astype(np.float64), ys.astype(np.float64), mono)
+    z = depth[v, u]
+    ok = np.isfinite(z) & (z >= DEPTH_MIN) & (z <= DEPTH_MAX)
+    if ok.sum() < MIN_RIM_PTS:
+        return None
+    pts = backproject(u[ok].astype(np.float64), v[ok].astype(np.float64), z[ok])
+
+    c0, n, uh, vh, prms, keep = fit_plane(pts)
+    if prms > MAX_PLANE_RMS:
+        return None
+    centre, r, crms = fit_circle(pts[keep], c0, uh, vh)
+    if abs(r - RING_CL_R) > RADIUS_TOL:
+        return None
+
+    # Orient the normal along the fly-through direction FIRST -- away from the camera
+    # at the origin (n . centre > 0) -- because the next step steps along it.
+    if float(n @ centre) < 0:
+        n = -n
+    # Depth saw the tube's NEAR surface, on the camera side of the centreline; the
+    # plane we fly through is the centreline, TUBE_TO_PLANE farther from the camera,
+    # i.e. along +n. (Do this after the flip, or it pushes the wrong way.)
+    centre = centre + n * TUBE_TO_PLANE
+
+    inlier_ratio = keep.sum() / len(pts)
+    conf = inlier_ratio * math.exp(-crms / 0.05) * math.exp(-abs(r - RING_CL_R) / 0.2)
+    if conf < MIN_CONF:
+        return None
+    return centre, n, float(r), float(conf)
 
 
-def draw_overlay(frame, el, obs):
-    """Annotate the live frame: ring ellipse, its centre, image crosshair,
-    and the obs values -- so `--gui` shows what the detector sees."""
-    cx0, cy0 = int(CX), int(CY)
-    cv2.drawMarker(frame, (cx0, cy0), (255, 255, 0), cv2.MARKER_CROSS, 20, 1)
-    vis, offx, offy, fill, defo, dist = obs
-    if el is not None and vis > 0.5:
-        centred = abs(offx) < 0.05 and abs(offy) < 0.05
-        col = (0, 255, 0) if centred else (0, 165, 255)
-        cv2.ellipse(frame, el, col, 2)
+def detect(rgb, depth):
+    """Full frame -> list of detections [(centre, normal, radius, conf, ellipse)].
+
+    ellipse is kept only so the GUI can redraw it; the published contract is the
+    3D fields.
+    """
+    out = []
+    for contour, el, mask in detect_rings(rgb):
+        got = localise(contour, el, mask, depth)
+        if got is not None:
+            centre, n, r, conf = got
+            out.append((centre, n, r, conf, el))
+    return out
+
+
+# =========================================================================
+# ROS node
+# =========================================================================
+def make_pose(centre, normal):
+    p = Pose()
+    p.position.x, p.position.y, p.position.z = (float(c) for c in centre)
+    qx, qy, qz, qw = quat_from_zaxis(np.asarray(normal, float))
+    p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w = qx, qy, qz, qw
+    return p
+
+
+def draw_overlay(bgr, dets):
+    cv2.drawMarker(bgr, (int(CX), int(CY)), (255, 255, 0), cv2.MARKER_CROSS, 20, 1)
+    for centre, n, r, conf, el in dets:
+        cv2.ellipse(bgr, el, (0, 255, 0), 2)
         cx, cy = int(el[0][0]), int(el[0][1])
-        cv2.circle(frame, (cx, cy), 4, (0, 0, 255), -1)
-        cv2.line(frame, (cx0, cy0), (cx, cy), (0, 0, 255), 1)
-    txt = '{}  off=({:+.2f},{:+.2f}) fill={:.2f} defo={:.2f} dist={:.2f}m'.format(
-        'RING' if vis > 0.5 else 'searching', offx, offy, fill, defo, dist)
-    cv2.putText(frame, txt, (8, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.circle(bgr, (cx, cy), 4, (0, 0, 255), -1)
+        cv2.putText(bgr, 'C=({:+.2f},{:+.2f},{:+.2f}) r={:.2f} n=({:+.2f},{:+.2f},'
+                    '{:+.2f}) c={:.2f}'.format(*centre, r, *n, conf),
+                    (cx - 120, cy - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                    (255, 255, 255), 1, cv2.LINE_AA)
+    cv2.putText(bgr, '{} gate(s)'.format(len(dets)), (8, 22),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
 
 
-class Depth:
-    """Latest depth frame, as a float32 metres array. Stale frames read as None."""
-
-    def __init__(self, node):
-        self.img = None
-        self.t = 0.0
+class GateDetector:
+    def __init__(self, node, gui):
         self.node = node
-        # KEEP_LAST(1). The capture loop drains one callback per colour frame, so a
-        # deeper queue could hand us a frame several deliveries old (KEEP_LAST(n)
-        # gives the reader the OLDEST of the n it holds) -- and at 1.6 m/s, 0.3 s of
-        # backlog is half a metre of range error against a 50 mm margin. Measured, no
-        # backlog actually forms today: the sim renders depth at ~15 Hz, not the SDF's
-        # nominal 30, so it publishes slower than we consume. Depth 1 costs nothing
-        # and makes that a property of the code rather than of the frame rate.
-        #
-        # Reliability is the plain default, verified against the parameter_bridge in
-        # gates_mission.launch.py: it does NOT publish on qos_profile_sensor_data, as
-        # many sensor topics do, so best-effort here would match nothing.
-        node.create_subscription(Image, DEPTH_TOPIC, self._cb, 1)
+        self.gui = gui
+        self.pub = node.create_publisher(PoseArray, '/gate/detections', 10)
+        # Reliability is the bridge's default (verified against parameter_bridge in
+        # gates_mission.launch.py) -- it does NOT use qos_profile_sensor_data, so
+        # best-effort here would match nothing.
+        sub_c = Subscriber(node, Image, COLOR_TOPIC)
+        sub_d = Subscriber(node, Image, DEPTH_TOPIC)
+        # slop 33 ms ~ one frame at 30 Hz; queue 5 rides out the rate mismatch
+        # (colour ~30, depth ~15).
+        self.sync = ApproximateTimeSynchronizer([sub_c, sub_d], 5, 0.033)
+        self.sync.registerCallback(self.on_pair)
+        self.n = 0
+        self.n_seen = 0            # frames that produced at least one gate
+        self.n_last_log = 0
+        self.t_last_log = None
 
-    def _cb(self, msg):
-        if msg.encoding != '32FC1':
+    def on_pair(self, color_msg, depth_msg):
+        if depth_msg.encoding != '32FC1':
             self.node.get_logger().warn(
-                'depth encoding {} != 32FC1'.format(msg.encoding), once=True)
+                'depth encoding {} != 32FC1'.format(depth_msg.encoding), once=True)
             return
-        self.img = np.frombuffer(msg.data, np.float32).reshape(
-            msg.height, msg.width)
-        self.t = self.node.get_clock().now().nanoseconds * 1e-9
+        rgb = np.frombuffer(color_msg.data, np.uint8).reshape(H, W, 3)
+        depth = np.frombuffer(depth_msg.data, np.float32).reshape(H, W)
 
-    def latest(self):
-        if self.img is None:
-            return None
-        age = self.node.get_clock().now().nanoseconds * 1e-9 - self.t
-        return self.img if age < DEPTH_TIMEOUT else None
+        dets = detect(rgb, depth)
+
+        msg = PoseArray()
+        msg.header.stamp = color_msg.header.stamp
+        msg.header.frame_id = DEPTH_FRAME
+        msg.poses = [make_pose(c, n) for c, n, r, conf, el in dets]
+        self.pub.publish(msg)
+
+        self.n += 1
+        if dets:
+            self.n_seen += 1
+        # A detection is news, so log it at ~1 Hz. "Nothing seen" is the NORMAL
+        # state -- the drone spends most of a yaw sweep pointed at empty field --
+        # so it goes out every 5 s instead of 15 frames, and carries the frame
+        # count and rate rather than repeating itself. That way a stalled camera
+        # (counter frozen) reads differently from an empty view (counter climbing),
+        # and a dead node with a window still open reads differently from both.
+        now = time.monotonic()
+        if self.t_last_log is None:
+            self.t_last_log = now
+        if dets and self.n % 15 == 0:
+            c, n, r, conf, _ = dets[0]
+            self.node.get_logger().info(
+                '{} gate(s); nearest C=({:+.2f},{:+.2f},{:+.2f}) r={:.2f} '
+                'n=({:+.2f},{:+.2f},{:+.2f}) conf={:.2f}'.format(
+                    len(dets), *c, r, *n, conf))
+            self.t_last_log, self.n_last_log = now, self.n
+        elif not dets and now - self.t_last_log >= 5.0:
+            dt = now - self.t_last_log
+            self.node.get_logger().info(
+                'no gate | frames={} ({:.1f} Hz), {} of them had one'.format(
+                    self.n, (self.n - self.n_last_log) / dt, self.n_seen))
+            self.t_last_log, self.n_last_log = now, self.n
+        if self.gui:
+            bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            draw_overlay(bgr, dets)
+            cv2.imshow('gate_detect N1 (q=quit)', bgr)
+            if (cv2.waitKey(1) & 0xFF) == ord('q'):
+                rclpy.shutdown()
 
 
-def run(node, gui):
-    """Main-thread capture loop: read colour frame -> detect -> range -> publish.
-
-    The colour read blocks, so the loop lives in the main thread (cv2.imshow must).
-    spin_once(timeout_sec=0) drains the depth subscription without blocking it.
+# =========================================================================
+# self-check -- no camera, no ROS:  python3 gate_detect.py --selfcheck
+# =========================================================================
+def _synthetic(dist_m, tilt_deg=0.0):
+    """A ring at dist_m, optionally tilted about the image X axis by tilt_deg, drawn
+    into an rgb8 frame + a float32 depth image. Forward-projects the model's own
+    geometry through the model's own intrinsics, and models the tube as the ROUND
+    cylinder it is (surface at range - sqrt(r^2-u^2)), so a flat-disc bug in
+    TUBE_TO_PLANE cannot hide behind a flat-disc synthetic.
     """
-    pub = node.create_publisher(Float32MultiArray, '/gate/obs', 10)
-    depth = Depth(node)
-    enable_streaming()
-    proc = subprocess.Popen(shlex.split(GST), stdout=subprocess.PIPE)
-    nbytes = W * H * 3
-    n = 0
-    try:
-        while rclpy.ok():
-            rclpy.spin_once(node, timeout_sec=0)      # drain depth callbacks
-            raw = read_exact(proc.stdout, nbytes)
-            if raw is None:
-                node.get_logger().warn('camera stream ended')
-                break
-            frame = np.frombuffer(raw, np.uint8).reshape(H, W, 3)
-            d = depth.latest()
-            obs, el, (src, d_m, mono_m) = observe(frame, d)
-            pub.publish(Float32MultiArray(data=obs))
-            n += 1
-            if n % 30 == 0:              # ~1 Hz heartbeat
-                # Print BOTH ranges and which one was published. If `src` reads MONO
-                # while the sim is up, the depth path is broken -- and the two numbers
-                # side by side say how badly.
-                node.get_logger().info(
-                    'ring {} off=({:+.2f},{:+.2f}) fill={:.2f} defo={:.2f} '
-                    'dist={:.2f}m via {} (depth={:.2f} mono={:.2f}) depth_img={}'
-                    .format('SEEN' if obs[0] else 'none ', obs[1], obs[2], obs[3],
-                            obs[4], obs[5], src, d_m, mono_m,
-                            'fresh' if d is not None else 'STALE'))
-            if gui:
-                draw_overlay(frame, el, obs)
-                cv2.imshow('gate_detect (q=quit)', frame)
-                if (cv2.waitKey(1) & 0xFF) == ord('q'):
-                    break
-    finally:
-        try:
-            proc.terminate()
-        except Exception:
-            pass
-        if gui:
-            cv2.destroyAllWindows()
-
-
-def _synthetic(dist_m):
-    """A head-on orange ring at dist_m, drawn into a colour frame + a depth image.
-
-    Forward-projects the model's own geometry through the model's own intrinsics, so
-    the test exercises the real numbers rather than a made-up scale.
-
-    The depth image models the tube as the ROUND CYLINDER it is -- surface at
-    dist - sqrt(r^2 - u^2), u being the offset from the tube centreline. An earlier
-    version painted it as a flat disc at dist - r, which quietly agreed with the
-    wrong + RING_TUBE_R correction and let a 10 mm bias through. A synthetic that
-    shares your bug cannot catch it.
-    """
-    frame = np.zeros((H, W, 3), np.uint8)
-    cv2.circle(frame, (int(CX), int(CY)),
-               int(FX_COLOR * (RING_DIAM_M / 2.0) / dist_m), (0, 115, 255), -1)
-    cv2.circle(frame, (int(CX), int(CY)),
-               int(FX_COLOR * (RING_TUBE_CL - RING_TUBE_R) / dist_m), (0, 0, 0), -1)
+    rgb = np.zeros((H, W, 3), np.uint8)
+    orange = (255, 115, 0)              # RGB
+    cv2.circle(rgb, (int(CX), int(CY)),
+               int(FX_COLOR * (RING_CL_R + RING_TUBE_R) / dist_m), orange, -1)
+    cv2.circle(rgb, (int(CX), int(CY)),
+               int(FX_COLOR * (RING_CL_R - RING_TUBE_R) / dist_m), (0, 0, 0), -1)
 
     yy, xx = np.mgrid[0:H, 0:W]
-    rho = np.hypot(xx - CX, yy - CY) * dist_m / FX_DEPTH      # metres from ring centre
-    u = rho - RING_TUBE_CL                                    # offset from tube centreline
+    # metres from ring centre in the depth image plane; tilt stretches the Y radius
+    ky = math.cos(math.radians(tilt_deg))
+    rho = np.hypot((xx - CX), (yy - CY) / max(ky, 1e-3)) * dist_m / FX_DEPTH
+    u = rho - RING_CL_R
     on_tube = np.abs(u) < RING_TUBE_R
-    depth = np.full((H, W), 50.0, np.float32)                 # far background
-    depth[on_tube] = dist_m - np.sqrt(
-        RING_TUBE_R ** 2 - u[on_tube] ** 2)
-    return frame, depth.astype(np.float32)
+    depth = np.full((H, W), 50.0, np.float32)
+    # tilt tips the near surface: +Z shift proportional to Y offset, tan(tilt)
+    zoff = (yy - CY) * dist_m / FX_DEPTH * math.tan(math.radians(tilt_deg))
+    depth[on_tube] = (dist_m + zoff[on_tube]
+                      - np.sqrt(RING_TUBE_R ** 2 - u[on_tube] ** 2))
+    return rgb, depth.astype(np.float32)
 
 
 def _selfcheck():
-    """No camera, no ROS. Run: python3 gate_detect.py --selfcheck"""
-    # Intrinsics must reproduce the model's published camera_info.
     assert abs(FX_COLOR - 616.92) < 0.5, FX_COLOR
     assert abs(FX_DEPTH - 446.80) < 0.5, FX_DEPTH
+    assert abs(TUBE_TO_PLANE - 0.0693) < 1e-3, TUBE_TO_PLANE
 
-    # 1) Depth is ACTUALLY the source -- assert the source flag, not just the number.
-    # A silent fall-back to mono would still produce a plausible range here, which is
-    # how a dead depth path stays invisible.
-    frame, depth = _synthetic(5.0)
-    obs, _, (src, d_m, mono_m) = observe(frame, depth)
-    assert obs[0] == 1.0, 'ring not detected'
-    assert src == 'depth', 'range came from {}, not depth'.format(src)
-    assert obs[5] == d_m, 'published range is not the depth one'
-    assert abs(obs[1]) < 0.02 and abs(obs[2]) < 0.02, 'should be centred'
-    assert obs[4] > 0.95, 'head-on ring should be circular: defo={}'.format(obs[4])
+    # --- geometry unit tests on clean 3D point sets (the maths, no images) ---
+    rng = np.random.default_rng(0)
+    ang = rng.uniform(0, 2 * math.pi, 400)
+    ring = np.column_stack((0.83 * np.cos(ang), 0.83 * np.sin(ang),
+                            np.zeros_like(ang)))          # flat ring, radius 0.83, z=0
+    ring += np.array([0.2, -0.1, 3.0])                    # move it in space
+    c0, n, uh, vh, rms, keep = fit_plane(ring)
+    centre, r, crms = fit_circle(ring, c0, uh, vh)
+    assert abs(r - 0.83) < 1e-3, r
+    assert np.allclose(centre, [0.2, -0.1, 3.0], atol=1e-3), centre
+    assert abs(abs(n[2]) - 1.0) < 1e-3, n                 # plane is z=const -> n ~ +/-z
 
-    # 15 mm, tight enough to fail if TUBE_TO_PLANE reverts to the flat-face RING_TUBE_R
-    # (that is worth 8 mm of bias, and a ground-truth rig measured it at 10 mm).
-    assert abs(obs[5] - 5.0) < 0.015, 'depth range off: {}'.format(obs[5])
-    assert abs(TUBE_TO_PLANE - 0.0520) < 1e-4, TUBE_TO_PLANE
+    # quaternion round-trip: +Z of the quat must come back as n
+    for nn in ([0, 0, 1], [0, 0.5, 0.87], [0.3, -0.2, 0.93]):
+        nn = np.array(nn, float); nn /= np.linalg.norm(nn)
+        qx, qy, qz, qw = quat_from_zaxis(nn)
+        # rotate local +Z by the quat
+        zc = np.array([2 * (qx * qz + qw * qy), 2 * (qy * qz - qw * qx),
+                       1 - 2 * (qx * qx + qy * qy)])
+        assert np.allclose(zc, nn, atol=1e-6), (zc, nn)
 
-    # 2) Depth must be read on the TUBE, never at the centre. The centre is the HOLE,
-    # so the background there is at 50 m: if we ever sampled it, the range would bolt.
-    for truth in (3.0, 1.5):
-        frame, depth = _synthetic(truth)
-        obs, _, (src, _, _) = observe(frame, depth)
-        assert src == 'depth'
-        assert abs(obs[5] - truth) < 0.015, \
-            'range off at {} m: {} (hole leaking into the median?)'.format(truth, obs[5])
+    # --- full pipeline: head-on ring, depth must localise centre/normal/radius ---
+    for truth in (2.0, 3.5, 5.0):
+        rgb, depth = _synthetic(truth)
+        dets = detect(rgb, depth)
+        assert len(dets) == 1, 'expected one ring at {} m, got {}'.format(truth, len(dets))
+        c, n, r, conf, _ = dets[0]
+        assert abs(c[0]) < 0.05 and abs(c[1]) < 0.05, ('off-centre', c)
+        assert abs(c[2] - truth) < 0.05, ('range', c[2], truth)
+        assert abs(r - RING_CL_R) < 0.08, ('radius', r)
+        assert n[2] > 0.9, ('normal should face the camera axis', n)   # +Z, toward flight
 
-    # 3) Mono fallback: no depth at all, and depth that is all-invalid. Both must fall
-    # back AND SAY SO, rather than reporting a depth range that was never measured.
-    frame, _ = _synthetic(3.0)
-    obs_none, _, (src_none, d_none, mono_none) = observe(frame, None)
-    assert src_none == 'MONO', src_none
-    assert math.isnan(d_none) and obs_none[5] == mono_none
-    assert abs(obs_none[5] - 3.0) < 0.15, 'mono fallback off: {}'.format(obs_none[5])
-    obs_inf, _, (src_inf, _, _) = observe(frame, np.full((H, W), np.inf, np.float32))
-    assert src_inf == 'MONO', 'all-inf depth must not pass as a depth measurement'
-    assert abs(obs_inf[5] - obs_none[5]) < 1e-6
+    # --- TWO RINGS WHOSE PAINTED BANDS TOUCH must stay two rings ---
+    # This is the regression that hid for a whole debugging session: on a course you
+    # see several gates at once, their annuli merge into ONE connected component,
+    # and an outer-contour detector then fits a single giant ellipse over the pair.
+    # It even passes the shape gate, so nothing logs an error -- the range check
+    # downstream just quietly rejects it and N1 reports "no gate" with four gates
+    # filling the frame. Keying on the HOLES is what fixes it, and this asserts it.
+    rgb, depth = _synthetic(5.0)
+    r_out_px = int(FX_COLOR * (RING_CL_R + RING_TUBE_R) / 5.0)
+    r_in_px = int(FX_COLOR * (RING_CL_R - RING_TUBE_R) / 5.0)
+    shift = int(1.9 * r_out_px)                   # far enough apart to keep 2 holes,
+    cx2 = int(CX) + shift                         # close enough that the bands touch
+    cv2.circle(rgb, (cx2, int(CY)), r_out_px, (255, 115, 0), -1)
+    cv2.circle(rgb, (cx2, int(CY)), r_in_px, (0, 0, 0), -1)
+    mask = cv2.inRange(cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV), ORANGE_LO, ORANGE_HI)
+    merged, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    assert len(merged) == 1, \
+        'test is not exercising the bug: the two bands must MERGE into one blob'
+    found = detect_rings(rgb)
+    assert len(found) == 2, \
+        'two touching rings collapsed into {} candidate(s)'.format(len(found))
+    xs = sorted(el[0][0] for _, el, _ in found)
+    assert abs(xs[0] - CX) < 3 and abs(xs[1] - cx2) < 3, ('hole centres', xs)
 
-    # 4) Off-centre ring reads to the right; blank frame and a big non-elliptical
-    # orange blob both read as "no ring" (that blob once hijacked a whole mission).
-    frame = np.zeros((H, W, 3), np.uint8)
-    cv2.ellipse(frame, (int(W * 0.75), H // 2), (60, 40), 0, 0, 360, (0, 115, 255), -1)
-    obs, _, _ = observe(frame)
-    assert obs[0] == 1.0 and obs[1] > 0.3, obs[1]
-    assert observe(np.zeros((H, W, 3), np.uint8))[0][0] == 0.0
+    # --- ring_pixels: the cheap ROI/diamond band == the old full-frame disc ---
+    # The band shape changed for speed (see ring_pixels), so pin the EQUIVALENCE
+    # rather than trusting the argument. Near range is the case that matters:
+    # that is where reach -- and the old cost -- blew up.
+    for dist in (5.0, 2.0, 1.2):
+        rgb, _ = _synthetic(dist)
+        for hole, _el, m in detect_rings(rgb):
+            old = np.zeros(m.shape, np.uint8)
+            cv2.drawContours(old, [hole], -1, 255, -1)
+            (_, axes, _) = cv2.fitEllipse(hole)
+            reach = max(2, int(round(ANNULUS_REACH * min(axes))))
+            disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                             (2 * reach + 1, 2 * reach + 1))
+            want = np.nonzero(cv2.bitwise_and(
+                cv2.subtract(cv2.dilate(old, disc), old), m))
+            got = ring_pixels(hole, m)
+            assert np.array_equal(want[0], got[0]) and \
+                np.array_equal(want[1], got[1]), \
+                'band khac cach cu o {} m (reach {})'.format(dist, reach)
+
+    # --- oblique ring: the normal must tilt, not stay dead-on ---
+    rgb, depth = _synthetic(3.0, tilt_deg=30.0)
+    dets = detect(rgb, depth)
+    assert len(dets) == 1, 'oblique ring not found'
+    _, n, _, _, _ = dets[0]
+    tilt = math.degrees(math.acos(min(abs(n[2]), 1.0)))
+    assert 15.0 < tilt < 45.0, 'normal tilt {:.1f} deg, expected ~30'.format(tilt)
+
+    # --- rejects: blank frame, and a big non-elliptical orange blob ---
+    assert detect(np.zeros((H, W, 3), np.uint8), np.full((H, W), 3.0, np.float32)) == []
     blob = np.zeros((H, W, 3), np.uint8)
-    cv2.fillPoly(blob, [np.array([(100, 100), (300, 120), (140, 300)])], (0, 115, 255))
-    assert observe(blob)[0][0] == 0.0, 'triangle blob passed the ring shape gate'
+    cv2.fillPoly(blob, [np.array([(100, 100), (300, 120), (140, 300)])], (255, 115, 0))
+    assert detect(blob, np.full((H, W), 3.0, np.float32)) == [], 'triangle blob passed'
 
-    print('gate_detect self-check OK (fx_color={:.1f} fx_depth={:.1f})'
+    # --- no valid depth -> no detection (perception must not invent a pose) ---
+    rgb, _ = _synthetic(3.0)
+    assert detect(rgb, np.full((H, W), np.inf, np.float32)) == [], 'inf depth localised'
+
+    print('gate_detect N1 self-check OK (fx_color={:.1f} fx_depth={:.1f})'
           .format(FX_COLOR, FX_DEPTH))
 
 
@@ -477,11 +616,14 @@ def main():
     gui = ('--gui' in sys.argv) or os.environ.get('GATE_GUI') == '1'
     rclpy.init()
     node = rclpy.create_node('gate_detect')
+    GateDetector(node, gui)
     try:
-        run(node, gui)
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
+        if gui:
+            cv2.destroyAllWindows()
         node.destroy_node()
         try:
             rclpy.shutdown()
