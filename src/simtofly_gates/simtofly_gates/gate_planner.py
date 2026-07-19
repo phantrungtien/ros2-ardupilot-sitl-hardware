@@ -556,6 +556,19 @@ def _build_node():
                  zaxis_from_quat(p.orientation.x, p.orientation.y,
                                  p.orientation.z, p.orientation.w))
                 for p in msg.poses]
+            # A gate outside the box can never be planned to, and the failure
+            # gives no hint of why: dijkstra just returns None and the FSM waits
+            # out its 90 s timeout. Flown: a gate 6 m behind the launch point sat
+            # at x = -6.01 against an origin of x = -2 and was written off as
+            # unreachable. Grow to fit the gates instead -- with the stand-off
+            # anchors either side, so the approach and exit are inside too.
+            if self.gates:
+                want = np.array([c + s_ * D_POST * n
+                                 for c, n in self.gates for s_ in (-1.0, 1.0)])
+                if self.grid.cover(want):
+                    self.get_logger().warn(
+                        'noi luoi de bao het vong: goc {} , {} voxel'.format(
+                            np.round(self.grid.origin, 1), self.grid.shape))
 
         def on_pose(self, msg):
             p = msg.pose.position
