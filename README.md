@@ -232,10 +232,12 @@ simulator does *not* give you (depth noise, min-Z blind zone, frame conventions)
 colcon build --symlink-install
 source install/setup.bash
 
-# The whole course, one command: vision, planner, trajectory, FSM and overlay,
-# each in its own window. It takes off, flies the four rings, judges each pass
-# and comes home.
+# The whole course, one command: vision, planner, trajectory, FSM, overlay and
+# RViz, each in its own window. It takes off, flies the four rings, judges each
+# pass and comes home, drawing the track it flew against the plan it was given.
 ros2 launch simtofly_gates gates_mission.launch.py
+
+# rviz:=false drops the one window that costs real CPU.
 
 # Verify N1..N4 instead of flying: hold_and_watch takes off and holds still
 # facing the first ring, which keeps it in frame while you read the topics.
