@@ -55,7 +55,24 @@ L_SEG_MAX = 1.5            # m; longest straight run allowed in one segment. Equ
                            # to N4's D_PRE/D_POST on purpose -- see _split_long.
 STREAM_HZ = 20.0           # setpoint rate. >= 1 Hz is required; 20 is comfortable
 TAKEOFF_ALT = 3.5          # m
-TRACK_HOLD = 0.5           # m; tracking error above this -> hold and re-seed
+TRACK_HOLD = 0.5           # m; CROSS-TRACK error above this -> hold and re-seed.
+                           # Cross-track only, deliberately. The total distance to
+                           # the SHAPE_LAG-old command is dominated by how far
+                           # along the path the vehicle is, which is bookkeeping,
+                           # not danger: measured in flight, along +-0.45..0.52 m
+                           # with the sign FLIPPING (0.8 m/s x 0.7 s = 0.56 m, so
+                           # in steady cruise the compensation overshoots and the
+                           # drone reads as being AHEAD of its own command) while
+                           # cross-track stayed at 0.05..0.29 m. Guarding on the
+                           # total aborted good trajectories at 0.50-0.54 m in a
+                           # livelock -- abort, hold 2 s, rebuild, abort -- that
+                           # cost a whole gate to GATE_TIMEOUT on two runs.
+                           # 0.5 m is also N4's CORRIDOR_R: past that the drone is
+                           # outside the tube the planner proved clear, which is
+                           # exactly when holding is the right answer.
+                           # Falling BEHIND needs no threshold here: the drone is
+                           # flying the same cleared path, just late, and N6's
+                           # GATE_TIMEOUT is already the ceiling on late.
 EMPTY_PATH_STUCK = 10      # consecutive unusable paths before this stops being a
                            # transient and starts being a stuck mission. N4
                            # republishes at ~2 Hz, so this is ~5 s of getting
@@ -67,13 +84,19 @@ SHAPE_LAG = 0.7            # s the vehicle runs BEHIND the setpoint, by design.
                            # measured position always trails the commanded one.
                            # Measured live: a dead-steady 0.50-0.53 m at v_cruise
                            # 0.8 m/s, on 10 aborts across one run -> 0.53/0.8 =
-                           # 0.66 s. Compared against the CURRENT command that lag
-                           # reads as a 0.5 m error and trips TRACK_HOLD forever;
-                           # compared against the command from SHAPE_LAG ago it
-                           # reads as ~0, and the guard goes back to meaning what
-                           # par. 6.3 wants it to mean -- the drone is DIVERGING,
-                           # not merely trailing. Retune per airframe: this is a
-                           # property of the vehicle's controller, not of N5.
+                           # 0.66 s. Comparing against the command from SHAPE_LAG
+                           # ago instead of the current one is what stops a
+                           # trailing drone reading as a 0.5 m error.
+                           #
+                           # It is an APPROXIMATION, and knowing by how much is
+                           # the point: the real lag varies with flight phase, so
+                           # in steady cruise 0.7 s overshoots and the along-track
+                           # term comes out around +0.5 m -- the drone reads as
+                           # ahead of its own past command. That is why TRACK_HOLD
+                           # guards the cross-track term only; no single constant
+                           # here can make the along-track term trustworthy.
+                           # Retune per airframe: this is a property of the
+                           # vehicle's controller, not of N5.
 RETRY_HOLD = 2.0           # s to sit still after that before rebuilding the path.
                            # Long enough for ArduCopter to actually stop, so the
                            # rebuild starts from a state it can hold; retrying
@@ -160,12 +183,13 @@ def _split_long(pts, yaws, l_max=None):
     return out_p, out_y
 
 
-def lag_error(cmd_log, now, here):
-    """How far `here` is from where the vehicle was told to be SHAPE_LAG ago.
+def lag_error_vec(cmd_log, now, here):
+    """Displacement (here - where the vehicle was told to be SHAPE_LAG ago).
 
     `cmd_log` is (time, commanded position) in time order. Returns None until the
     log reaches that far back -- there is nothing to compare against yet, and
-    guessing would abort a takeoff that is going perfectly well.
+    guessing would abort a takeoff that is going perfectly well. A vector, not a
+    distance, because only its cross-track part means anything: see TRACK_HOLD.
     """
     cutoff = now - SHAPE_LAG
     was = None
@@ -175,7 +199,24 @@ def lag_error(cmd_log, now, here):
         was = p
     if was is None:
         return None
-    return float(np.linalg.norm(np.asarray(here, float) - was))
+    return np.asarray(here, float) - was
+
+
+def split_error(vec, heading):
+    """(along, cross) -- the error resolved along the direction of travel and
+    perpendicular to it.
+
+    These two mean opposite things, and one scalar distance conflates them.
+    Trailing ALONG the path is what a shaped controller does by construction: it
+    is late, not lost, and the gate does not care. Drifting CROSS-track is the
+    one par. 6.3 is about -- with a 0.75 m ring hole, that is the number that
+    decides whether the drone hits the rim.
+    """
+    h = _unit(heading)
+    if not h.any():
+        return 0.0, float(np.linalg.norm(vec))
+    along = float(vec @ h)
+    return along, float(np.linalg.norm(vec - along * h))
 
 
 def build_segments(points, yaws, p0, v0, a0,
@@ -369,9 +410,6 @@ def _build_node():
                 'quy dao moi #{}: {} doan, {:.1f} s, a_dinh {:.2f} m/s2, ket tai {}'
                 .format(self.n_replan, n_seg, total, a_peak, np.round(end, 2)))
 
-        def lag_error(self):
-            return lag_error(self.cmd_log, time.time(), self._xyz())
-
         def stream(self):
             """One 20 Hz tick. MUST publish something every time."""
             if self.cmd_p is None:
@@ -393,12 +431,16 @@ def _build_node():
             # commanded it. Re-seeding from the stale commanded state would keep
             # widening the gap, so drop the trajectory, hold, and re-seed from
             # the MEASURED state -- the one case par. 5.9 allows that.
-            err = self.lag_error()
-            if err is not None and err > TRACK_HOLD:
+            vec = lag_error_vec(self.cmd_log, time.time(), self._xyz())
+            # cmd_v = 0 (holding) makes the whole error cross-track, which is
+            # what we want there: a drone that drifts while told to stand still
+            # IS diverging.
+            along, cross = split_error(vec, self.cmd_v) if vec is not None else (0.0, 0.0)
+            if vec is not None and cross > TRACK_HOLD:
                 if self.active is not None:
                     self.get_logger().warn(
-                        'tracking error {:.2f} m > {:.2f} -- bo quy dao, giu vi tri'
-                        .format(err, TRACK_HOLD))
+                        'lech ngang {:.2f} m > {:.2f} (doc {:+.2f}) -- bo quy '
+                        'dao, giu vi tri'.format(cross, TRACK_HOLD, along))
                 self.active, self.segs = None, []
                 self.cmd_p = self._xyz()
                 self.cmd_v = np.zeros(3)
@@ -675,18 +717,33 @@ def _selfcheck():
     log = [(now - 2.0 + i * 0.05, np.array([i * 0.05 * V_CRUISE, 0.0, 3.0]))
            for i in range(40)]
     behind = log[-1][1] - np.array([SHAPE_LAG * V_CRUISE, 0.0, 0.0])
-    err = lag_error(log, now, behind)
-    # pure lag reads as ~zero. The residual is one log sample of quantisation
-    # (0.05 s at 20 Hz x 0.8 m/s = 0.04 m), an order below TRACK_HOLD.
-    assert err is not None and err < 0.05, err
-    # the OLD test compared against the newest command and saw the full lag,
-    # which is what tripped TRACK_HOLD ten times on a clean 4/4 run
-    assert float(np.linalg.norm(behind - log[-1][1])) > TRACK_HOLD
-    # a drone genuinely off the path still trips
-    assert lag_error(log, now, behind + np.array([0.0, 0.9, 0.0])) > TRACK_HOLD
+    head = np.array([V_CRUISE, 0.0, 0.0])
+    _, cross = split_error(lag_error_vec(log, now, behind), head)
+    # pure lag reads as ~zero cross-track. The residual is one log sample of
+    # quantisation (0.05 s at 20 Hz x 0.8 m/s = 0.04 m), well under TRACK_HOLD.
+    assert cross < 0.05, cross
+
+    # A drone LATE along the path must not trip the guard, whatever the total
+    # distance says. This is the livelock that cost a gate on two runs: measured
+    # in flight the along term ran +-0.45..0.52 m -- sign flipping, because at
+    # cruise the SHAPE_LAG compensation overshoots and the drone reads as being
+    # AHEAD of its own past command -- while cross-track never left 0.05..0.29 m.
+    for slip in (-0.9, +0.9):
+        vec = lag_error_vec(log, now, behind + np.array([slip, 0.0, 0.0]))
+        along, cross = split_error(vec, head)
+        assert abs(along) > TRACK_HOLD and cross < 0.05, (along, cross)
+
+    # ...but a drone off the path SIDEWAYS still does.
+    vec = lag_error_vec(log, now, behind + np.array([0.0, 0.9, 0.0]))
+    assert split_error(vec, head)[1] > TRACK_HOLD
+
+    # holding (no commanded velocity): every direction counts as cross-track,
+    # because drifting while told to stand still is divergence in any direction
+    assert split_error(np.array([0.9, 0.0, 0.0]), np.zeros(3))[1] > TRACK_HOLD
+
     # and nothing is judged until the log reaches SHAPE_LAG back
-    assert lag_error(log[-3:], now, behind) is None
-    assert lag_error([], now, behind) is None
+    assert lag_error_vec(log[-3:], now, behind) is None
+    assert lag_error_vec([], now, behind) is None
 
     total = sum(t.T for t, _ in segs)
     print('trajectory_follower self-check OK ({} doan, {:.1f} s, C2 lien tuc, '
