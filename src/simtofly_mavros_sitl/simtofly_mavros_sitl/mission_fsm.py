@@ -243,12 +243,32 @@ class MissionFSM(GuidedNode):
             return 'ra khoi geofence tai {}'.format(np.round(p, 1))
         return None
 
-    def land(self, why):
-        self.get_logger().warn('LAND: {}'.format(why))
-        if not self.set_mode('LAND'):
-            self.get_logger().error('set LAND that bai -- thu RTL')
-            self.set_mode('RTL')
+    def land(self, why, mode='LAND'):
+        """End the flight. `mode` is LAND (descend where we are) or RTL (fly
+        home first) -- see finish() for why the normal ending uses RTL."""
+        self.get_logger().warn('{}: {}'.format(mode, why))
+        other = 'RTL' if mode == 'LAND' else 'LAND'
+        if not self.set_mode(mode):
+            self.get_logger().error('set {} that bai -- thu {}'.format(mode, other))
+            self.set_mode(other)
         self.state = 'DONE'
+
+    def finish(self, why):
+        """The course is done -- go home rather than landing here.
+
+        LAND descends in place, and "in place" at the end of a course is a
+        stand-off past the LAST gate, which is directly above that gate's
+        stand: a 0.35 m base plate with a mast on it. Measured over four runs
+        the drone came down between 0.4 m and on top of it, and touching the
+        plate tips it -- ArduCopter then reports `Crash: Disarming AngErr=83>30`
+        and cuts the motors. It survived the one clean run by 8 cm.
+
+        RTL flies back to the launch point, which is open ground the drone
+        already took off from, and lands there. Aborts keep plain LAND: with a
+        dead pose estimate or a geofence breach, flying the length of the course
+        is worse than coming down where we are.
+        """
+        self.land(why, mode='RTL')
 
     def tick(self):
         now = time.time()
@@ -280,8 +300,8 @@ class MissionFSM(GuidedNode):
             return
         self.check_timeouts(now, p)
         if self.mission_over(now):
-            self.land('het vong: {}/{} xong'.format(len(self.done),
-                                                    len(self.gates)))
+            self.finish('het vong: {}/{} xong'.format(len(self.done),
+                                                      len(self.gates)))
             for k in sorted(self.done):
                 self.get_logger().info('  vong {}: {}'.format(k, self.done[k]))
 
@@ -389,6 +409,14 @@ def _selfcheck():
     assert node.mission_over(now + END_QUIET + 1)
 
     assert outside([0, 0, 20]) and outside([100, 0, 3]) and not outside([1, 2, 3])
+
+    # finishing the course goes HOME (the last gate's stand is right below us);
+    # an abort comes down where it stands
+    modes = []
+    node.set_mode = lambda m: modes.append(m) or True
+    node.finish('done')
+    node.land('mat pose')
+    assert modes == ['RTL', 'LAND'], modes
     print('mission_fsm selfcheck OK')
 
 
