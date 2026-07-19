@@ -109,6 +109,9 @@ class Tracker:
     def __init__(self):
         self.gates = []
         self._next_id = 0
+        self.new_tracks = []    # centres of tracks as they are BORN, so a gate
+                                # that was seen once but never confirmed can be
+                                # told apart from one that was never seen
         self.merges = 0         # twins folded back together; the node logs it,
                                 # because a clean map cannot otherwise be told
                                 # apart from a map that never split in the first
@@ -119,6 +122,7 @@ class Tracker:
         if i is None:
             self.gates.append(Gate(self._next_id, centre, normal))
             self._next_id += 1
+            self.new_tracks.append(np.asarray(centre, float).copy())
         else:
             self.gates[i].update(centre, normal, GATE_ALPHA)
         self._merge()
@@ -260,6 +264,9 @@ class GateTracker(Node):
             self.tracker.observe(c_map, n_map)
 
     def publish_map(self):
+        while self.tracker.new_tracks:
+            self.get_logger().info('track moi (TENTATIVE) tai {}'.format(
+                np.round(self.tracker.new_tracks.pop(0), 2)))
         if self.tracker.merges != self.said_merges:
             self.said_merges = self.tracker.merges
             self.get_logger().info(
