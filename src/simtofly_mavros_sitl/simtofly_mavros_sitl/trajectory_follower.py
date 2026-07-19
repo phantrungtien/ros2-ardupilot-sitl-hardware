@@ -56,6 +56,11 @@ L_SEG_MAX = 1.5            # m; longest straight run allowed in one segment. Equ
 STREAM_HZ = 20.0           # setpoint rate. >= 1 Hz is required; 20 is comfortable
 TAKEOFF_ALT = 3.5          # m
 TRACK_HOLD = 0.5           # m; tracking error above this -> hold and re-seed
+EMPTY_PATH_STUCK = 10      # consecutive unusable paths before this stops being a
+                           # transient and starts being a stuck mission. N4
+                           # republishes at ~2 Hz, so this is ~5 s of getting
+                           # nowhere -- long enough that a single bad path during
+                           # a replan does not trip it.
 SHAPE_LAG = 0.7            # s the vehicle runs BEHIND the setpoint, by design.
                            # GUIDED does not jump to a position target, it shapes
                            # its way there under WPNAV_ACCEL / PSC_JERK_XY, so the
@@ -296,6 +301,7 @@ def _build_node():
             self.last_path = None      # kept so a truncated chain can be retried
             self.truncated = False
             self.n_replan = 0
+            self.n_empty = 0        # consecutive paths that built no segments
             self.retry_at = 0.0         # earliest rebuild after a tracking abort
             # (time, commanded position) for the last couple of seconds, so the
             # tracking check can ask "where did we tell it to be SHAPE_LAG ago?"
@@ -327,10 +333,25 @@ def _build_node():
             segs, complete = build_segments(pts, yaws, self.cmd_p, self.cmd_v,
                                             self.cmd_a)
             if not segs:
-                self.get_logger().warn(
-                    'path moi khong sinh duoc doan nao -- giu vi tri',
-                    throttle_duration_sec=2.0)
+                # Holding position is the right thing to DO here, but repeating
+                # it quietly is not: this fired 95 times over 190 s while the
+                # planner republished a path the drone had already flown past,
+                # and the run looked like a drone calmly holding station rather
+                # than a mission that had stopped dead. The state is only
+                # recoverable from outside (N4 replans, or N6 times the gate
+                # out), so say so once it is clearly not a transient.
+                self.n_empty += 1
+                if self.n_empty == EMPTY_PATH_STUCK:
+                    self.get_logger().error(
+                        'KET: {} path lien tiep khong sinh duoc doan nao -- '
+                        'drone dang treo, cho N4 replan hoac N6 het gio'
+                        .format(self.n_empty))
+                else:
+                    self.get_logger().warn(
+                        'path moi khong sinh duoc doan nao -- giu vi tri',
+                        throttle_duration_sec=2.0)
                 return
+            self.n_empty = 0
             n_seg = len(segs)
             total = sum(t.T for t, _ in segs)
             a_peak = max(t.peak_accel().max() for t, _ in segs)
