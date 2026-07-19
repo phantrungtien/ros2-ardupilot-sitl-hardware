@@ -247,6 +247,23 @@ def _search(grid, occ, start, goal, lo, hi):
     return grid.idx_to_world(idx)
 
 
+def stuck_report(grid, occ, p):
+    """Why a search from p cannot start: (occupied?, free neighbours of 26).
+
+    A FAILURE reads the same whether the map is genuinely walled off or the
+    drone is simply sitting inside inflation -- _search force-frees the start
+    voxel, but that buys nothing when all 26 of its neighbours are inflated, so
+    the search has no outgoing edge and fails identically. These two numbers
+    tell the cases apart.
+    """
+    idx, ok = grid.world_to_idx([p])
+    if not ok[0]:
+        return None
+    i, j, k = idx[0]
+    box = occ[max(i - 1, 0):i + 2, max(j - 1, 0):j + 2, max(k - 1, 0):k + 2]
+    return bool(occ[i, j, k]), int((~box).sum()) - (0 if occ[i, j, k] else 1)
+
+
 def line_is_clear(grid, occ, a, b):
     """True if the straight segment a->b touches no occupied voxel."""
     a, b = np.asarray(a, float), np.asarray(b, float)
@@ -287,6 +304,40 @@ def resample(points, step=STEP):
     return np.array(out)
 
 
+def free_around_drone(grid, occ, drone):
+    """Force the voxels the drone currently occupies FREE, in place.
+
+    The drone is flying THERE. Whatever the map says about that volume is
+    therefore wrong -- stale returns, or, far more often, the inflation skirt of
+    a ring it is in the middle of threading. Without this the search has nowhere
+    to step: _search force-frees the start VOXEL, but that is one cell in a
+    solid block, so it has no outgoing edge and Dijkstra fails identically to a
+    genuinely walled-off map.
+
+    Measured live (run 3, chasing gate 4 from inside gate 3's ring):
+    `drone (occupied=True, free neighbours 0/26)` -- and every plan from that
+    pose failed for 90 s until the FSM gave up on the gate, twice a run.
+
+    Radius INFLATE_R, not ROBOT_RADIUS: clearing only the body leaves the drone
+    ringed by inflation one voxel further out, still with no way to step. This
+    erases the safety margin exactly where the drone has already proved there is
+    nothing to hit, and nowhere else.
+
+    What it must NOT do is clear a real obstacle. Clearing 0.60 m of INFLATION
+    around the drone is a statement about margin; clearing 0.60 m of MEASURED
+    occupancy would let the planner route through a wall the drone happens to be
+    hugging. So every measured voxel goes back afterwards -- which also makes
+    this safe to call after the corridor carve, whose tube (CORRIDOR_R 0.40)
+    lies inside the ring's 0.75 m hole and therefore contains no real voxels.
+
+    Call this LAST, after any corridor carving, for that reason.
+    """
+    grid.carve_corridor(occ, drone, (0.0, 0.0, 1.0),
+                        INFLATE_R, 2.0 * INFLATE_R)
+    occ |= grid.occ
+    return occ
+
+
 def plan_to_gate(grid, drone, centre, normal, whole_grid_retry=True):
     """(path, lock_from) for drone -> P_pre -> P_gate -> P_post, or (None, 0).
 
@@ -299,6 +350,7 @@ def plan_to_gate(grid, drone, centre, normal, whole_grid_retry=True):
     occ = grid.inflated(INFLATE_R)
     # reopen the target ring only -- other gates keep full inflation (plan par. 3.2)
     grid.carve_corridor(occ, centre, normal, CORRIDOR_R, CORRIDOR_LEN)
+    free_around_drone(grid, occ, drone)
     approach = dijkstra_path(grid, occ, drone, p_pre, whole_grid_retry)
     if approach is None:
         return None, 0
@@ -542,6 +594,11 @@ def _build_node():
             occ = self.grid.inflated(INFLATE_R)
             self.grid.carve_corridor(occ, centre, self.gate_normal,
                                      CORRIDOR_R, CORRIDOR_LEN)
+            # Same clearing the planner uses, or this asks a different question
+            # than the plan it is judging: while the drone sits inside a ring's
+            # inflation, the path segment under it reads blocked on every tick
+            # and 'path blocked' fires as a metronome again (par. 4.5).
+            free_around_drone(self.grid, occ, self.drone)
             # Only the part of the path STILL AHEAD of the drone can block it.
             # path_blocked has taken `ahead_from` for exactly this since it was
             # written, and passing nothing checked the flown part too -- which is
@@ -604,12 +661,23 @@ def _build_node():
                                            whole_grid_retry=full)
             ms = (time.time() - t0) * 1e3
             if path is None:
+                extra = ''
                 if full:
                     self.t_whole_grid = time.time()
+                    # Only on the whole-grid tick: it is already the slow path,
+                    # and rebuilding the inflated grid every 0.5 s just to log
+                    # would starve the builder this executor shares.
+                    occ = self.grid.inflated(INFLATE_R)
+                    self.grid.carve_corridor(occ, centre, normal,
+                                             CORRIDOR_R, CORRIDOR_LEN)
+                    free_around_drone(self.grid, occ, self.drone)
+                    d = stuck_report(self.grid, occ, self.drone)
+                    g = stuck_report(self.grid, occ, anchors(centre, normal)[0])
+                    extra = ' | drone {} P_pre {}'.format(d, g)
                 self.get_logger().warn(
-                    'dijkstra FAILURE to gate at {} ({:.0f} ms, {})'.format(
+                    'dijkstra FAILURE to gate at {} ({:.0f} ms, {}){}'.format(
                         np.round(centre, 2), ms,
-                        'ca luoi' if full else 'chi sub-box'),
+                        'ca luoi' if full else 'chi sub-box', extra),
                     throttle_duration_sec=2.0)
                 return
             self.path, self.target = path, centre.copy()
@@ -735,6 +803,42 @@ def _selfcheck():
     assert np.linalg.norm(at_plane - centre) < 0.4, 'crossed the plane off-centre'
     assert np.linalg.norm(np.cross(full[-1] - centre, normal)) < 1e-6, \
         'exit anchor is off the normal axis'
+
+    # --- a drone INSIDE a ring can still plan to the next gate ---
+    # This is the stall that ended two live runs: after threading a ring the
+    # drone sits in its inflation skirt, so its own voxel and all 26 neighbours
+    # read occupied, and every plan to the NEXT gate failed for 90 s until the
+    # FSM abandoned the gate. Ring 1 is the one the drone is stuck in; the
+    # target is ring 2, five metres on, whose corridor carving does nothing for
+    # a start buried in ring 1.
+    gs = VoxelGrid(origin=(0, 0, 0), dims_m=(14, 8, 6), res=0.2)
+    for cx in (4.0, 9.0):
+        gs.integrate(np.stack([np.full_like(ang, cx),
+                               4.0 + 0.83 * np.cos(ang),
+                               2.0 + 0.83 * np.sin(ang)], axis=-1))
+    inside = np.array([4.1, 4.0, 2.0])            # just past ring 1's plane
+    occ_s = gs.inflated(INFLATE_R)
+    gs.carve_corridor(occ_s, [9.0, 4.0, 2.0], [1.0, 0, 0], CORRIDOR_R, CORRIDOR_LEN)
+    assert stuck_report(gs, occ_s, inside) == (True, 0), \
+        'the fixture no longer reproduces the entombed start: {}'.format(
+            stuck_report(gs, occ_s, inside))
+    free_around_drone(gs, occ_s, inside)
+    assert stuck_report(gs, occ_s, inside)[1] == 26, 'drone still has no way out'
+
+    # ... but a MEASURED obstacle inside that bubble survives it. Clearing
+    # inflation is a statement about margin; clearing a wall the drone is
+    # hugging would route the next plan straight through it.
+    gw = VoxelGrid(origin=(0, 0, 0), dims_m=(8, 8, 6), res=0.2)
+    gw.integrate(np.array([[2.4, y, z] for y in np.arange(3.0, 5.0, 0.1)
+                           for z in np.arange(1.0, 3.0, 0.1)]))
+    near = np.array([2.0, 4.0, 2.0])                  # 0.4 m off the wall face
+    occ_w = gw.inflated(INFLATE_R)
+    free_around_drone(gw, occ_w, near)
+    wall_idx, _ = gw.world_to_idx([[2.4, 4.0, 2.0]])
+    assert occ_w[tuple(wall_idx[0])], 'buc tuong that bi xoa khoi ban do'
+    p2, _ = plan_to_gate(gs, inside, np.array([9.0, 4.0, 2.0]),
+                         np.array([1.0, 0.0, 0.0]))
+    assert p2 is not None, 'still cannot plan out of the ring it just threaded'
 
     # --- shortcut prunes a staircase to a straight line in open space ---
     g4 = VoxelGrid(origin=(0, 0, 0), dims_m=(8, 8, 6), res=0.2)
