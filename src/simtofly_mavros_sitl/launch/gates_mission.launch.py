@@ -10,7 +10,8 @@ gated by READINESS not timers:
   3. DepthBridge - ros_gz_bridge: the D435i depth image -> ROS, which is what
                    gate_detect ranges the ring with
   4. MAVROS      - waits for SITL's master port (TCP 5760)
-  5. Controller  - mission_gates (waits for /mavros/state connected)
+  5. Controller  - whatever `controller:=` names, see below (waits for
+                   /mavros/state connected)
   6. GateVision  - gate_detect WITH its GUI window (--gui): the live colour feed
                    with the detected ring/ellipse overlay. It publishes the
                    /gate/obs that (5) flies by.
@@ -24,11 +25,28 @@ gated by READINESS not timers:
   9. GatePlanner - gate_planner (N3+N4): depth -> occupancy grid, and Dijkstra over
                    it -> /planner/path (latched). One node, because the grid never
                    needed to leave the process -- see the class docstring.
+ 10. MissionFSM  - mission_fsm (N6), only with `fsm:=true`: judges each pass and
+                   ends the flight. See the note on FSM_CMD.
+ 11. PlanOverlay - plan_overlay (N7): draws the live plan onto the colour image
+                   -> /plan_overlay/image. Always on; it only reads.
 
-(8)-(9) are the Dijkstra planning stack. They run ALONGSIDE mission_gates (5),
-not instead of it: (5) still flies the drone off its own detections, while (9)
-publishes the path it WOULD fly. Nothing consumes /planner/path yet -- N5 does not
-exist -- so watch it in RViz. When N5/N6 land they replace (5), not these.
+(8)-(9) are the Dijkstra planning stack, and what consumes /planner/path is the
+controller in slot (5). Pick it with `controller:=`:
+
+  hold_and_watch       (default) takes off and holds still facing the first ring.
+                       Verifies N1..N4 without flying: a stationary drone keeps a
+                       ring in frame ~100% of the time instead of 1.3% (measured).
+  trajectory_follower  N5 -- flies the path as a Mueller minimum-jerk trajectory.
+                       This is the one that flies the course.
+  mission_gates        the legacy single-ring FSM. Does NOT work: it subscribes
+                       /gate/obs, which nothing has published since N1 was
+                       rewritten to emit /gate/detections.
+
+`fsm:=true` adds N6 on top, which is what turns a demo into a MISSION: it judges
+each pass by the plan par. 7 R3 test and ends the flight with RTL. The full course:
+
+    ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
+        controller:=trajectory_follower fsm:=true
 
 The two camera streams reach us by different routes, which is why (3) exists at
 all: COLOUR still arrives as H264/RTP on UDP 5600 (the colour sensor carries

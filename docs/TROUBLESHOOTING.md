@@ -325,6 +325,76 @@ No Heartbeat Packets Received
 
 ---
 
+## Gate Course Issues (N1–N7)
+
+Every failure in this section looked, from the outside, like a healthy stack. That is
+the point: none of them announce themselves.
+
+### The whole stack is silent — no gates, TF errors at time 0.000000
+
+A **stale Gazebo server from the previous run** is still holding the FDM port, so the
+readiness wait passes instantly and this run attaches to the *old* world. `/clock`
+never reaches ROS, every node sits at time 0, and TF lookups fail forever.
+
+`gz sim` **ignores SIGTERM**, so a plain `pkill -f "gz sim"` does not kill it:
+
+```bash
+pkill -KILL -f "gz sim"
+ss -lun | grep 9002        # must print NOTHING before you start again
+```
+
+### Prearm refuses with "Accels inconsistent" / "Gyros inconsistent"
+
+Two stacks are running at once — almost always a previous run that never died. It has
+nothing to do with the IMU. Tear everything down, confirm no `gz sim`, `arducopter` or
+`mavros_node` survives, then start one stack.
+
+> Put the kill commands in a **script**, never inline. `pkill -f` matches the argv of
+> the shell running it, so any command that merely *mentions* a process name — even
+> `grep -n "mission_fsm" file` — can kill its own shell halfway through and leave the
+> stack half up.
+
+### The drone flies one or two rings, then hovers until the mission gives up
+
+`gate_planner` logs `dijkstra FAILURE` on every tick. After threading a ring the drone
+sits inside that ring's 0.60 m inflation skirt, so its own voxel and all 26 neighbours
+read occupied and the search has no edge to leave the start on. Fixed in
+`free_around_drone()`; if it reappears, the diagnostic prints the evidence directly:
+
+```
+dijkstra FAILURE to gate at [...] | drone (True, 0) P_pre (False, 26)
+                                          ^^^^^^^^^  occupied, 0 of 26 free
+```
+
+### The mission finishes, then ArduCopter reports `Crash: Disarming: AngErr>30`
+
+The drone landed on a **ring stand** — a 0.35 m base plate directly under each ring,
+which is where the course leaves it hovering. Finishing the course must end in `RTL`
+(returns to the open launch point), not `LAND`. Aborts still use `LAND` on purpose.
+
+Precision landing looks like the culprit here (`PrecLand: Failsafe Measures` appears
+at exactly the right moment, and SITL's `eeprom.bin` may well have `PLND_ENABLED 1`
+persisted). It is not — forcing `PLND_ENABLED 0` does not stop the crash. Don't spend
+time there.
+
+### Running SITL headless: MAVROS connects but no topic ever publishes
+
+MAVProxy dies on EOF without a tty and takes the vehicle with it, so headless runs
+need `--no-mavproxy`. But without MAVProxy nothing requests the data streams, and SITL
+leaves every `SR0_*` at 0 — `/mavros/state` says `connected: true` while no data
+arrives. Feed the rates in by param file:
+
+```bash
+sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --no-mavproxy \
+    --add-param-file=rates.parm      # SR0_POSITION 30, SR0_EXTRA1 30, ...
+```
+
+30 Hz because `map->base_link` comes from that stream and has to match the 30 Hz depth
+image; at MAVProxy's default of 4 Hz every node looking up a transform at an image's
+own stamp asks for a time the buffer has not reached.
+
+---
+
 ## Still Having Issues?
 
 1. **Check logs:**

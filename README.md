@@ -173,30 +173,46 @@ The pure controller geometry lives in `circle_control.py` and is unit-tested
 
 ---
 
-### Fly Through a Gate
+### Fly a Gate Course
 
-`mission_gates` flies the drone through a racing ring using **only the onboard
-camera** — colour to find the ring, **depth to range it**. It is never told where the
-gate is: it finds it, ranges it, and flies through it.
+The drone flies a **four-ring course** on the onboard camera alone — colour to find
+each ring, depth to range it. Nothing tells it where the rings are, in what order, or
+when it is done: it maps them, plans through them, flies them, judges each pass, and
+goes home.
 
-Two halves, split across two packages:
+Seven nodes, three packages:
 
-| Half | Node | Does |
-|------|------|------|
-| **Vision** | `simtofly_vision/gate_detect` | Finds the orange ring (HSV → `cv2.fitEllipse`), **ranges it with the D435i depth stream**, publishes `/gate/obs` |
-| **Control** | `simtofly_mavros_sitl/mission_gates` | Reconstructs where the ring is *in metres*, flies through it |
+| # | Node | Does |
+|---|------|------|
+| N1 | `simtofly_vision/gate_detect` | Finds each orange ring (HSV mask) and fits its **plane** in the depth cloud → `/gate/detections`, in metres |
+| N2 | `simtofly_vision/gate_tracker` | Associates detections across frames into stable gates → `/gate/map` |
+| N3+N4 | `simtofly_planner/gate_planner` | Builds the occupancy grid, carves a corridor through the target ring, and runs Dijkstra over it → `/planner/path` |
+| N5 | `simtofly_mavros_sitl/trajectory_follower` | Fits a **Mueller minimum-jerk** trajectory to that path and streams position setpoints at 20 Hz |
+| N6 | `simtofly_mavros_sitl/mission_fsm` | Owns the mission: judges each pass, enforces the geofence and pose watchdog, and ends the flight |
+| N7 | `simtofly_planner/plan_overlay` | Draws the live plan back onto the colour image → `/plan_overlay/image` |
+
+**A pass is not "we ended up past the ring".** N6 watches the signed distance along
+the gate normal, interpolates the exact plane crossing, and measures the off-axis miss
+*there* — checking at the current sample instead gets it wrong in both directions
+(clean through then drifting wide reads as a miss; flying outside the rim and lining
+up a moment later reads as a pass). A crossing closer than 0.25 m to the rim counts as
+a graze, and the gate **stays on the list to be flown again**.
+
+The legacy single-ring `mission_gates` still ships, but it listens to `/gate/obs`,
+which nothing has published since N1 was rewritten — it is kept only so the old
+behaviour is one argument away.
 
 #### 1. Get the Gazebo world and models
 
-The drone, the gate and the world live in a **separate repo** — an ArduPilot Iris
-carrying a nose-mounted **Intel RealSense D435i** (colour + depth + stereo IR + IMU),
-a racing ring, and the course world:
+The drone, the rings and the course world live in a **separate repo** — an ArduPilot
+Iris carrying a nose-mounted **Intel RealSense D435i** (colour + depth + stereo IR +
+IMU), four rings on stands, and the course world:
 
-**→ [phantrungtien/gazebo_ardupilot_depth_camera](https://github.com/phantrungtien/gazebo_ardupilot_depth_camera)**
+**→ [phantrungtien/gazebo_ardupilot_env](https://github.com/phantrungtien/gazebo_ardupilot_env)**
 
 ```bash
 # The launch files expect it at ~/gz_ws — clone it there.
-git clone https://github.com/phantrungtien/gazebo_ardupilot_depth_camera.git ~/gz_ws
+git clone https://github.com/phantrungtien/gazebo_ardupilot_env.git ~/gz_ws
 cd ~/gz_ws
 
 # ArduPilot's plugin is kept as a pristine clone (gitignored, never modified)
@@ -213,49 +229,55 @@ simulator does *not* give you (depth noise, min-Z blind zone, frame conventions)
 #### 2. Fly it
 
 ```bash
-colcon build --packages-select simtofly_vision simtofly_mavros_sitl
+colcon build --symlink-install
 source install/setup.bash
 
-# 6 windows, and gate_detect opens its GUI so you can watch the ellipse it fits
-ros2 launch simtofly_mavros_sitl gates_mission.launch.py
+# The whole course: vision, planner, trajectory, FSM and overlay, each in its own
+# window. fsm:=true is what makes it a MISSION rather than a demo -- N6 ends the
+# flight, so only turn it on with a controller that actually flies the rings.
+ros2 launch simtofly_mavros_sitl gates_mission.launch.py \
+    controller:=trajectory_follower fsm:=true
 
-# or through the shared launch — same thing, no vision GUI
-ros2 launch simtofly_mavros_sitl sitl_mission.launch.py mission:=mission_gates
+# Verify N1..N4 instead of flying: hold_and_watch (the default) takes off and holds
+# still facing the first ring, which keeps it in frame while you read the topics.
+ros2 launch simtofly_mavros_sitl gates_mission.launch.py
 ```
 
-Both bring up the `ros_gz_bridge` that carries the depth image into ROS. Colour
-needs no bridge — it still arrives as H.264/RTP on UDP 5600.
+It brings up the `ros_gz_bridge` that carries the depth image into ROS. Colour needs
+no bridge — it still arrives as H.264/RTP on UDP 5600.
 
-#### 3. What makes it hard: a 50 mm margin
-
-The ring's clear opening is **0.371 m** and the drone is **0.321 m** across the prop
-tips, and the ring **has collision** — so there are **50 mm** to spend, and spending
-them is a crash. Three biases each exceed that budget on their own:
-
-| Bias | Size | vs. the 50 mm |
-|------|-----:|--------------:|
-| A tolerance of 0.15 in *normalised pixels*, at commit range | ~154 mm | **3×** |
-| The colour camera sits left of the drone's centreline | 32.5 mm | **65%** |
-| 5° of nose-down pitch (the camera is welded to the airframe) | 123 mm | **2.5×** |
-
-So the controller never servos pixels to zero. It reconstructs the ring's position in
-**metres in the body frame** (where the camera offset lives), then rotates it into ENU
-with the drone's **attitude quaternion** (where the pitch bias lives). Both biases
-cancel by construction, and every threshold in the file is a real distance you can
-compare against the 50 mm.
-
-**The ring also goes blind before you reach it.** The detector fits an ellipse to the
-ring's outer contour, so once the ring outgrows the frame that contour is cut and the
-ring stops existing — at full size, dead ahead. The colour camera's *vertical*
-half-FOV binds, so this happens below `0.491 / tan(21.25°) = 1.26 m`. The mission
-therefore commits **while the ring is still whole**, and flies the last stretch on a
-frozen world point off `/mavros/local_position` rather than on pixels.
-
-Both halves have an offline self-check that needs no simulator:
+Watch it work:
 
 ```bash
-python3 src/simtofly_vision/simtofly_vision/gate_detect.py --selfcheck
-python3 src/simtofly_mavros_sitl/simtofly_mavros_sitl/mission_gates.py --selfcheck
+ros2 run rqt_image_view rqt_image_view /plan_overlay/image   # the plan, on the camera
+ros2 topic echo /gate/map                                    # the rings it believes in
+ros2 run simtofly_mavros_sitl verify_n6                      # grade a run (Ctrl-C to score)
+```
+
+#### 3. Two things that are easy to get wrong
+
+**The drone ends up inside the map.** Obstacles are inflated by 0.60 m before
+planning, and after threading a ring the drone is sitting inside that ring's inflation
+skirt — its own voxel and all 26 neighbours read occupied. Dijkstra force-frees the
+*start voxel*, but one free cell in a solid block has no outgoing edge, so the search
+fails exactly as it would against a genuinely walled-off map. Left unhandled the
+mission stalls after the first ring or two and the FSM abandons the rest of the course
+on timeout. The planner therefore clears the volume the drone currently occupies —
+it is flying there, so whatever the map says about that volume is wrong.
+
+**Landing where the course ends is landing on a stand.** Every ring sits on a 0.35 m
+base plate with a mast, directly below its centre, and the course leaves the drone
+hovering a stand-off past the *last* ring — i.e. more or less on top of that plate.
+`LAND` descends in place, catches the plate, tips, and ArduCopter cuts the motors with
+`Crash: Disarming: AngErr>30`. Finishing the course therefore ends in **RTL**, which
+returns to the open ground it took off from. Aborts still use plain `LAND`: with a
+dead pose estimate or a geofence breach, flying the length of the course is worse than
+coming down where you are.
+
+Every node has an offline self-check that needs no simulator:
+
+```bash
+for f in src/*/simtofly_*/*.py; do python3 "$f" --selfcheck 2>/dev/null; done
 ```
 
 > **SITL-verified:** the drone finds the ring, closes on it, commits, flies clean
