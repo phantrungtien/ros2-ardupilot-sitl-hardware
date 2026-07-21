@@ -56,9 +56,19 @@ PUBLISH_HZ = 5.0
 # DO NOT raise this -- see the long note on gate_planner.TF_TIMEOUT. Short version:
 # a tf2 timeout BLOCKS, this node is on a single-threaded executor, and the thing it
 # blocks is the /tf callback that would deliver the transform. Waiting therefore
-# cannot succeed, and it starves the listener so the next lookup is worse. Drop the
-# detection instead; at ~10 detections/s, losing one is free.
+# cannot succeed, and it starves the listener so the next lookup is worse. Fall back
+# to the newest transform instead -- see MAX_TF_SLIP.
 TF_TIMEOUT = 0.0           # s
+MAX_TF_SLIP = 0.05         # s
+# Dropping a slipped detection is NOT free, which is what the old comment here got
+# wrong. Depth frames and /tf both run at 30 Hz but are not phase-locked, so a good
+# fraction of frames land 1-14 ms past the newest transform -- measured, gates_course
+# 2026-07-21: 7-30 drops per run, all of them on a gate the drone was staring
+# straight at. That gate reached exactly one hit and never made CONFIRM_HITS, so it
+# never entered /gate/map and the drone flew 3 of 4 rings while reporting success.
+# 14 ms at 1 m/s is 1.4 cm of position error; the ring is 0.83 m across. Use the
+# newest transform and only skip if it is genuinely stale, same as
+# gate_planner._tf_for.
 
 TENTATIVE, CONFIRMED = 'TENTATIVE', 'CONFIRMED'
 
@@ -239,17 +249,46 @@ class GateTracker(Node):
         self.create_timer(1.0 / PUBLISH_HZ, self.publish_map)
         self.said_merges = 0
 
+    def _tf_for(self, header):
+        """map <- sensor frame at the frame's own stamp, or the newest one if that
+        stamp is past the end of the buffer by no more than MAX_TF_SLIP.
+
+        A moving drone makes "latest" wrong in principle, which is why the stamped
+        lookup is tried first; MAX_TF_SLIP bounds how wrong the fallback can be.
+        """
+        try:
+            return self.tf_buf.lookup_transform(
+                MAP_FRAME, header.frame_id, header.stamp,
+                timeout=rclpy.duration.Duration(seconds=TF_TIMEOUT))
+        except ExtrapolationException:
+            pass
+        except (LookupException, ConnectivityException) as e:
+            self.get_logger().warn('no TF {}<-{}: {}'.format(
+                MAP_FRAME, header.frame_id, e), throttle_duration_sec=5.0)
+            return None
+        try:
+            tf = self.tf_buf.lookup_transform(
+                MAP_FRAME, header.frame_id, rclpy.time.Time())
+        except (LookupException, ConnectivityException,
+                ExtrapolationException) as e:
+            self.get_logger().warn('no TF {}<-{}: {}'.format(
+                MAP_FRAME, header.frame_id, e), throttle_duration_sec=5.0)
+            return None
+        want = header.stamp.sec + header.stamp.nanosec * 1e-9
+        got = tf.header.stamp.sec + tf.header.stamp.nanosec * 1e-9
+        if abs(want - got) > MAX_TF_SLIP:
+            self.get_logger().warn(
+                'TF tre {:.0f} ms (> {:.0f} ms), bo frame'.format(
+                    (want - got) * 1e3, MAX_TF_SLIP * 1e3),
+                throttle_duration_sec=5.0)
+            return None
+        return tf
+
     def on_dets(self, msg):
         if not msg.poses:
             return
-        try:
-            # lookup at the frame's OWN stamp; a moving drone makes "latest" wrong
-            tf = self.tf_buf.lookup_transform(
-                MAP_FRAME, msg.header.frame_id, msg.header.stamp,
-                timeout=rclpy.duration.Duration(seconds=TF_TIMEOUT))
-        except (LookupException, ConnectivityException, ExtrapolationException) as e:
-            self.get_logger().warn('no TF {}<-{} at stamp: {}'.format(
-                MAP_FRAME, msg.header.frame_id, e), throttle_duration_sec=2.0)
+        tf = self._tf_for(msg.header)
+        if tf is None:
             return
         t = tf.transform.translation
         q = tf.transform.rotation
