@@ -17,10 +17,12 @@ Mission Steps:
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-from mavros_msgs.msg import State
+from mavros_msgs.msg import State, SysStatus
 from mavros_msgs.srv import CommandBool, SetMode, CommandTOL
 from geometry_msgs.msg import PoseStamped
 import time
+
+from .guided_base import PREARM_CHECK_BIT, arm_gate
 
 
 class SimpleMission(Node):
@@ -50,6 +52,13 @@ class SimpleMission(Node):
             qos_profile
         )
 
+        self.sys_status_sub = self.create_subscription(
+            SysStatus,
+            '/mavros/sys_status',
+            self.sys_status_callback,
+            qos_profile
+        )
+
         # Publisher for setpoints (will only be used AFTER takeoff)
         self.setpoint_pub = self.create_publisher(
             PoseStamped,
@@ -65,6 +74,7 @@ class SimpleMission(Node):
         # State variables
         self.current_state = State()
         self.current_pose = PoseStamped()
+        self.prearm_ok = None       # None until sys_status arrives; see arm_with_retry
 
         # Wait for services
         print('Waiting for services...')
@@ -113,24 +123,52 @@ class SimpleMission(Node):
             print('✗ Failed to arm\n')
         return False
 
-    def arm_with_retry(self, timeout=60.0, interval=2.0):
-        """Keep trying to arm until it succeeds or `timeout` seconds pass.
+    def arm_with_retry(self, timeout=60.0, interval=2.0, blind_after=15.0):
+        """Wait until the vehicle reports itself armable, then arm.
 
-        Right after the MAVLink link connects, EKF/GPS/home are usually not
-        ready, so the first arm attempts get rejected by prearm checks.
-        Retrying waits exactly as long as needed (no magic sleep) and arms the
-        moment the vehicle becomes armable."""
+        This used to send an arm command every `interval` regardless of prearm
+        state and let the rejections pile up. That is not merely untidy: each
+        rejected command is a command-ack, and a burst of them trips the
+        double-satisfied std::promise that kills mavros_node with
+        `std::future_error` (see docs/TROUBLESHOOTING.md). GuidedNode was fixed
+        for this; this class is a separate Node and kept the old loop, so the
+        same bug was still reachable through mission_circle / verify_frame /
+        mission_gates.
+
+        Waiting costs no time: PREARM_CHECK goes healthy exactly when the
+        checks pass. `blind_after` keeps a firmware that never advertises the
+        bit flyable by falling back to the old blind retry.
+
+        Gate logic is `guided_base.arm_gate` rather than a second copy -- one
+        pure function, one self-check, two callers."""
         start = time.time()
         attempt = 0
+        said_wait = said_blind = False
         while time.time() - start < timeout and rclpy.ok():
+            waited = time.time() - start
+            ready, blind = arm_gate(self.prearm_ok, waited, blind_after)
+            if blind and not said_blind:
+                print(f'  ...khong co /mavros/sys_status sau {blind_after:.0f}s'
+                      ' -- quay ve thu arm mu')
+                said_blind = True
+            if not ready:
+                if not said_wait:
+                    print('  ...cho prearm xong roi moi arm (EKF/GPS/home)')
+                    said_wait = True
+                rclpy.spin_once(self, timeout_sec=0.1)
+                continue
             attempt += 1
             if self.arm(verbose=(attempt == 1)):
                 return True
-            print(f'  ...prearm chua xong (EKF/GPS), thu lai ({int(time.time() - start)}s)')
+            print(f'  ...arm bi tu choi, thu lai ({int(time.time() - start)}s)')
             end = time.time() + interval
             while time.time() < end and rclpy.ok():
                 rclpy.spin_once(self, timeout_sec=0.1)
         return False
+
+    def sys_status_callback(self, msg):
+        if msg.sensors_present & PREARM_CHECK_BIT:
+            self.prearm_ok = bool(msg.sensors_health & PREARM_CHECK_BIT)
 
     def takeoff(self, altitude):
         """Takeoff to specified altitude"""
