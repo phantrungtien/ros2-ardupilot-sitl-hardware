@@ -249,7 +249,7 @@ Run this from a **desktop terminal** — it opens a `gnome-terminal` window per 
 so the logs stay separate, and that needs a real session.
 
 ```bash
-colcon build --symlink-install
+colcon build
 source install/setup.bash
 
 # The whole course, one command: Gazebo, SITL, MAVROS, the depth bridge, the seven
@@ -257,6 +257,10 @@ source install/setup.bash
 # comes home, drawing the track it flew against the plan it was given.
 ros2 launch simtofly_gates gates_mission.launch.py
 ```
+
+**Build after every source change.** The nodes run from `install/`, which holds a
+*copy* of the source, so editing a `.py` and launching straight away flies the old
+code — silently, and it looks exactly like your change not working.
 
 | Argument | Default | What it does |
 |----------|---------|--------------|
