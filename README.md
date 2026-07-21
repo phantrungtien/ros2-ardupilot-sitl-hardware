@@ -191,6 +191,23 @@ Seven nodes, three packages:
 | N6 | `simtofly_gates/mission_fsm` | Owns the mission: judges each pass, enforces the geofence and pose watchdog, and ends the flight |
 | N7 | `simtofly_gates/plan_overlay` | Draws the live plan back onto the colour image → `/plan_overlay/image` |
 
+`gate_order.py` is not a node. It holds the one rule N4 and N6 must never disagree
+on — which gate to fly next — because N6 does not tell N4 where to go, it only says
+which gates are finished, and both then work the target out for themselves.
+
+**The flight, start to finish:**
+
+1. **Takeoff, then a sweep before flying anything.** The drone climbs through three
+   levels and turns a full circle at each. The camera is bolted to the airframe, so a
+   ring behind it or above it is simply not in frame at takeoff — on the harder
+   course one ring sits *behind* the launch point and another 2.5 m higher than the
+   rest. The sweep costs about a minute and is what makes the course knowable at all.
+2. **Rings ahead first, the one behind last.** Not nearest-first: that flies the hard
+   course as a zig-zag, and each reversal is a ~180° turn — the exact geometry that
+   makes a minimum-jerk fit infeasible at any duration. Total distance is the same
+   either way (38.8 m vs 38.1 m measured); the point is halving the hairpins.
+3. **Fly, judge, repeat**, then **RTL** — see below for why not `LAND`.
+
 **A pass is not "we ended up past the ring".** N6 watches the signed distance along
 the gate normal, interpolates the exact plane crossing, and measures the off-axis miss
 *there* — checking at the current sample instead gets it wrong in both directions
@@ -228,23 +245,44 @@ simulator does *not* give you (depth noise, min-Z blind zone, frame conventions)
 
 #### 2. Fly it
 
+Run this from a **desktop terminal** — it opens a `gnome-terminal` window per process
+so the logs stay separate, and that needs a real session.
+
 ```bash
 colcon build --symlink-install
 source install/setup.bash
 
-# The whole course, one command: vision, planner, trajectory, FSM, overlay and
-# RViz, each in its own window. It takes off, flies the four rings, judges each
-# pass and comes home, drawing the track it flew against the plan it was given.
+# The whole course, one command: Gazebo, SITL, MAVROS, the depth bridge, the seven
+# nodes and RViz. It takes off, sweeps for rings, flies them, judges each pass and
+# comes home, drawing the track it flew against the plan it was given.
 ros2 launch simtofly_gates gates_mission.launch.py
+```
 
-# rviz:=false drops the one window that costs real CPU.
+| Argument | Default | What it does |
+|----------|---------|--------------|
+| `expect_gates` | `4` | How many rings the **course** has. Read the warning below before changing it. |
+| `rviz` | `true` | `false` drops the one window that costs real CPU |
+| `controller` | `trajectory_follower` | `hold_and_watch` takes off and holds still facing the first ring — for reading topics instead of flying |
+| `fsm` | `true` | `false` stops N6 timing gates out and bringing the drone home |
 
-# Verify N1..N4 instead of flying: hold_and_watch takes off and holds still
-# facing the first ring, which keeps it in frame while you read the topics.
-# fsm:=false too, or N6 times every gate out and brings the drone home.
+```bash
+# Verify N1..N4 without flying the course. Both arguments, or N6 times every gate
+# out while the drone sits there and RTLs on you.
 ros2 launch simtofly_gates gates_mission.launch.py \
     controller:=hold_and_watch fsm:=false
 ```
+
+**`expect_gates` is the difference between "finished" and "gave up quietly."**
+`RTL: het vong 4/4 xong` grades the drone's map against itself — a ring it never
+confirmed is not in `/gate/map`, so it is never flown, never missed, and a three-ring
+run reads exactly like a complete one. Nothing on the wire carries the real number;
+only you know it, because you placed the rings. Get it wrong and a good run fails, or
+a bad one passes.
+
+The launch flies `gates_course.sdf`. The same world repo also ships
+`gates_course_hard.sdf` — same four rings, but one sits *behind* the launch point and
+one 2.5 m above the others. There is no `world` argument yet: switching means editing
+the one `gz sim` line near the top of `gates_mission.launch.py`.
 
 It brings up the `ros_gz_bridge` that carries the depth image into ROS. Colour needs
 no bridge — it still arrives as H.264/RTP on UDP 5600.
@@ -254,8 +292,22 @@ Watch it work:
 ```bash
 ros2 run rqt_image_view rqt_image_view /plan_overlay/image   # the plan, on the camera
 ros2 topic echo /gate/map                                    # the rings it believes in
-ros2 run simtofly_gates verify_n6                      # grade a run (Ctrl-C to score)
+
+# Grade a run. Must be running DURING the flight -- it watches the crossings live.
+# Ctrl-C to print the scorecard; it exits non-zero if a ring was missed or never seen.
+ros2 run simtofly_gates verify_n6 --expect 4
 ```
+
+**What a healthy run looks like in the logs:**
+
+| Line | Node | Means |
+|------|------|-------|
+| `quet tang 3/3 xong` | N5 | the opening sweep finished; every ring it can see is seen |
+| `muc tieu -> vong N` | N6 | target chosen — the ring behind you should be the LAST one |
+| `vong N XONG: LOT (lech truc ...)` | N6 | flown, with the off-axis miss at the plane crossing |
+| `RTL: het vong: 4/4 xong` | N6 | course complete — trust it only alongside `expect_gates` |
+| `no TF map<-d435i_...` | N2 | **should not appear.** Every one is a dropped sighting |
+| `THIEU N vong` | N6 | the course had rings this run never met. The run failed |
 
 #### 3. Two things that are easy to get wrong
 
@@ -283,8 +335,26 @@ Every node has an offline self-check that needs no simulator:
 for f in src/*/simtofly_*/*.py; do python3 "$f" --selfcheck 2>/dev/null; done
 ```
 
-> **SITL-verified:** the drone finds the ring, closes on it, commits, flies clean
-> through the hole without touching it, then RTLs.
+**A green self-check does not mean the nodes start.** They deliberately touch no ROS,
+so they never construct a node — a missing message import sits happily behind an
+all-green run and then kills the node on its first line in the air, which costs a
+whole batch of flights to find out. After adding a subscription or publisher, build
+one for real:
+
+```bash
+source install/setup.bash
+python3 -c "
+import rclpy; rclpy.init()
+from simtofly_gates import gate_tracker, mission_fsm, trajectory_follower as tf
+n = gate_tracker.GateTracker(); print(n.get_name()); n.destroy_node()
+_, C = tf._build_node(); n = C(); print(n.get_name()); n.destroy_node()
+m = mission_fsm.MissionFSM(); print(m.get_name(), m.expect); m.destroy_node()"
+```
+
+> **SITL-verified:** 8 consecutive runs, both worlds, every one flying 4/4 rings with
+> no ring missed and no ring dropped from the map — worst off-axis miss 0.066 m
+> against a 0.75 m hole. Includes the harder course, where one ring is behind the
+> launch point and one is 2.5 m above the rest.
 
 ---
 

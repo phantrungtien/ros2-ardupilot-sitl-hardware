@@ -366,6 +366,50 @@ dijkstra FAILURE to gate at [...] | drone (True, 0) P_pre (False, 26)
                                           ^^^^^^^^^  occupied, 0 of 26 free
 ```
 
+### A ring is right there in the picture but never reaches `/gate/map`
+
+Look in the `gate_tracker` log for:
+
+```
+no TF map<-d435i_depth_optical_frame: Lookup would require extrapolation into the
+future. Requested time 116.359 but the latest data is at time 116.358
+```
+
+One millisecond. N2 was looking the transform up at the depth frame's own stamp and
+dropping the detection whenever that missed. Depth and `/tf` both run at 30 Hz but
+are not phase-locked, so a large share of frames land just past the newest transform
+and were thrown away — a ring could be stared at for a minute and still reach only
+one hit, never make `CONFIRM_HITS`, and never enter the map. The drone then flew the
+rings it *did* know about and reported a complete course.
+
+Fixed in `gate_tracker._tf_for()`: fall back to the newest transform, skip only if it
+is staler than `MAX_TF_SLIP` (0.05 s). **A healthy run logs this line zero times.**
+
+Do not "fix" it by raising `TF_TIMEOUT`. A tf2 timeout is a blocking wait on a
+single-threaded executor, and the thing it blocks is the `/tf` callback that would
+deliver the transform. Raising it to 0.5 s once took the voxel map from 1265 to zero.
+
+### The drone parks mid-course while the planner keeps publishing paths
+
+`trajectory_follower` says it cannot build a segment; `gate_planner` says nothing at
+all, because from its point of view everything is fine. It is not: the path it
+published starts from where the drone *was*, and the drone has since moved somewhere
+that path does not reach. `needs_replan()` used to ask only three questions — no
+path, target moved, path blocked — and none of them notices this.
+
+`STRAY_R` (1.0 m) is the fourth question. Expect 2–4 `drone strayed` replans per run;
+dozens means the threshold is too tight and replanning has become a metronome.
+
+A stuck N5 cannot ask for a replan, so N4 has to notice on its own. Before that
+existed, the only thing that broke the deadlock was N6's 90 s `GATE_TIMEOUT` — which
+breaks it by throwing the ring away.
+
+### `RTL: het vong: 4/4 xong` on a course that has more rings than that
+
+The denominator is the drone's own map, not the course. Pass `expect_gates:=N` (or
+`mission_fsm --expect N`) and N6 will log `THIEU n vong` and `verify_n6` will fail.
+Without it, a run that never saw a ring is indistinguishable from a perfect one.
+
 ### The mission finishes, then ArduCopter reports `Crash: Disarming: AngErr>30`
 
 The drone landed on a **ring stand** — a 0.35 m base plate directly under each ring,
