@@ -97,7 +97,7 @@ class VerifyN6(Node):
                         'LOT' if miss < R_IN else 'TRUOT NGOAI VANH'))
 
 
-def report(node, partial=False):
+def report(node, partial=False, expect=0):
     """Grade every gate on the map. A gate crossed outside the rim is a failure,
     and so -- unless `partial` -- is a gate never crossed at all.
 
@@ -112,9 +112,27 @@ def report(node, partial=False):
     if not node.gates:
         log.error('khong nhan duoc /gate/map')
         return False
-    log.info('=== GD6 === ({} vong tren ban do{})'.format(
-        len(node.gates), ', cham kieu PARTIAL' if partial else ''))
+    # The denominator is the drone's OWN map, not the course. A gate never
+    # detected is not graded, not counted, and not missed -- so PASS means
+    # "flew every gate it found", which on a bad-light or long-range run can be
+    # a fraction of the gates actually standing there. `--expect` supplies the
+    # real number, which no topic carries because only the operator who placed
+    # the gates knows it.
+    log.info('=== GD6 === ({} vong tren ban do{}{})'.format(
+        len(node.gates),
+        ' / {} vong tren san'.format(expect) if expect
+        else ' CUA DRONE -- khong biet san that co bao nhieu vong',
+        ', cham kieu PARTIAL' if partial else ''))
     ok = bool(node.crossings)
+    # Measured over four runs (2026-07-21) TWO flew three of four gates and were
+    # reported as complete: the missing gate had been SEEN, localised to a few
+    # centimetres, and dropped for want of a fifth confirming hit. Grading only
+    # what reached the map scores that run as a clean sweep.
+    if expect and len(node.gates) < expect:
+        log.error('ban do chi co {}/{} vong -- {} vong CHUA BAO GIO LEN BAN DO,'
+                  ' khong the cham'.format(len(node.gates), expect,
+                                           expect - len(node.gates)))
+        ok = False
     for i in sorted(node.gates):
         C = node.gates[i][0]
         misses = node.crossings.get(i)
@@ -140,6 +158,9 @@ def report(node, partial=False):
 def main():
     import sys
     partial = '--partial' in sys.argv
+    expect = 0
+    if '--expect' in sys.argv and sys.argv.index('--expect') + 1 < len(sys.argv):
+        expect = int(sys.argv[sys.argv.index('--expect') + 1])
     rclpy.init()
     node = VerifyN6()
     node.get_logger().info('dang do... Ctrl-C de cham diem')
@@ -162,7 +183,8 @@ def main():
         print('spin ket thuc: {}: {}'.format(type(exc).__name__, exc))
     crossed = len(node.crossings)
     print('GD6 {} ({}/{} vong da cat mat phang)'.format(
-        'PASS' if report(node, partial) else 'FAIL', crossed, len(node.gates)))
+        'PASS' if report(node, partial, expect) else 'FAIL',
+        crossed, expect or len(node.gates)))
     node.destroy_node()
     try:
         rclpy.shutdown()
@@ -230,6 +252,19 @@ def _selfcheck():
     assert report(g, partial=True), '--partial phai tha cho run bi cat ngan'
     g.crossings = {i: [0.02] for i in range(4)}
     assert report(g), 'bay du 4/4 ma cham FAIL'
+
+    # the flown false green: a gate the drone never confirmed is not on the map,
+    # so every gate that IS on the map was flown clean and the run scores PASS.
+    # Twice in four runs on 2026-07-21. --expect is the only thing that knows.
+    h = VerifyN6.__new__(VerifyN6)
+    h.gates = {i: (np.array([5.0 * i, 0.0, 3.5]), np.array([1.0, 0.0, 0.0]))
+               for i in range(3)}
+    h.crossings = {i: [0.02] for i in range(3)}
+    h.track = [np.array([0.0, 0.0, 3.5])]
+    h.get_logger = g.get_logger
+    assert report(h), 'ba vong tren ban do, ca ba lot -- khong khai expect thi PASS'
+    assert not report(h, expect=4), 'san 4 vong ma ban do co 3 thi phai FAIL'
+    assert report(h, expect=3), 'expect dung bang so vong tren ban do thi PASS'
     print('verify_n6 selfcheck OK')
 
 

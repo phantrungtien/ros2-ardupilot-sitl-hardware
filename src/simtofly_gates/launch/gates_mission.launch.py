@@ -227,8 +227,8 @@ PLANNER_CMD = (ROS_SETUP + WAIT_MAVROS
 # hits GATE_TIMEOUT, N6 calls the course finished and lands the drone out from
 # under whatever you were verifying. Only turn it on with a controller that
 # actually flies the gates.
-FSM_CMD = (ROS_SETUP + WAIT_MAVROS
-           + 'ros2 run simtofly_gates mission_fsm' + SIM_TIME)
+FSM_CMD = [ROS_SETUP + WAIT_MAVROS + 'ros2 run simtofly_gates mission_fsm'
+           ' --expect ', LaunchConfiguration('expect_gates'), SIM_TIME]
 # N7. Draws the plan onto the colour image and republishes it; watch with
 # `ros2 run rqt_image_view rqt_image_view /plan_overlay/image`. Always on: it
 # only ever reads and publishes its own topic, so it cannot disturb a flight.
@@ -319,6 +319,15 @@ def generate_launch_description():
                         'course is done. Turn it OFF (fsm:=false) with a '
                         'controller that does not fly the gates, or every gate '
                         'times out and N6 brings the drone home under you.',
+        ),
+        DeclareLaunchArgument(
+            'expect_gates', default_value='4',
+            description='how many gates the WORLD has, which no topic carries: '
+                        '/gate/map is what the drone found, so a gate it never '
+                        'confirmed is silently absent from the score. Measured '
+                        'over four runs, two flew three of four gates and '
+                        'reported a complete course. Both shipped worlds have '
+                        '4. expect_gates:=0 restores the old quiet behaviour.',
         ),
         gnome_term('GateTracker', TRACKER_CMD),
         gnome_term('GatePlanner', PLANNER_CMD),

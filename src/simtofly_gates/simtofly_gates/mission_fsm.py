@@ -32,8 +32,13 @@ Tracking-error ABORT (par. 6.3) stays in N5 -- it owns the commanded state that
 the error is measured against; N5 already holds at 0.5 m.
 
 Run:  ros2 run simtofly_gates mission_fsm
+      ros2 run simtofly_gates mission_fsm --expect 4    (say how many gates the
+                                          course HAS, so a run that never sees
+                                          one of them says so instead of
+                                          reporting the subset as a full course)
       python3 mission_fsm.py --selfcheck      (geometry + bookkeeping, no ROS)
 """
+import sys
 import time
 
 import numpy as np
@@ -62,6 +67,12 @@ GATE_TIMEOUT = 90.0     # s chasing ONE gate before giving up on it. Without
                         # it appeared on the map: the whole course confirms
                         # early, so map-age would time out gates 3 and 4 while
                         # the drone was still flying gate 1.
+END_MAX = 75.0          # s after the last known gate is done, whatever is still
+                        # in frame. A gate already passed can stay in view for
+                        # ever, and without a ceiling the detection-aware quiet
+                        # timer below would hold the drone up until the battery
+                        # settled it. Long enough for N5's closing sweep (one
+                        # turn at SCAN_YAW_RATE is 12.6 s, plus stares).
 END_QUIET = 20.0        # s with every known gate done and no new one confirmed
                         # -> the course is finished.
 TICK_HZ = 10.0
@@ -97,6 +108,19 @@ def outside(p, fence=FENCE):
     return not (x0 <= p[0] <= x1 and y0 <= p[1] <= y1 and z0 <= p[2] <= z1)
 
 
+def _arg_int(flag, default):
+    """`--flag N` off the command line. argv rather than a ROS parameter to match
+    --selfcheck / --partial / --no-scan, which is how every other switch in this
+    package is spelled."""
+    argv = sys.argv
+    if flag in argv and argv.index(flag) + 1 < len(argv):
+        try:
+            return int(argv[argv.index(flag) + 1])
+        except ValueError:
+            pass
+    return default
+
+
 class MissionFSM(GuidedNode):
     # states: INIT -> RUN -> DONE, plus ABORT from anywhere
     def __init__(self):
@@ -109,6 +133,12 @@ class MissionFSM(GuidedNode):
                        reliability=QoSReliabilityPolicy.RELIABLE,
                        history=QoSHistoryPolicy.KEEP_LAST, depth=1))
         self.create_subscription(PoseArray, '/gate/map', self._map, 10)
+        # Raw detections too: a gate being LOOKED at is a reason to wait, and it
+        # arrives ~5 sightings before the map hears about it.
+        self.create_subscription(PoseArray, '/gate/detections',
+                                 self._detect, 10)
+        self.t_detect = 0.0
+        self.t_all_done = 0.0   # when the last KNOWN gate was finished
         self.gates = {}         # key -> (centre, unit normal), as the DRONE believes
         self.prev = {}          # key -> (position, signed distance) last pose
         self.done = {}          # key -> reason string
@@ -119,6 +149,15 @@ class MissionFSM(GuidedNode):
         self.state = 'INIT'     # NOTE: shadows nothing -- GuidedNode keeps the
         self.fcu = None         # MAVLink State in .fcu here, see _state_cb
         self.mode_seen = None
+        # How many gates the COURSE has, as opposed to how many the drone found.
+        # Nothing on the wire carries this: /gate/map is the drone's own belief,
+        # so a gate never confirmed is not in it, is never graded, and is never
+        # missed -- "4/4 xong" on a three-gate map reads exactly like success.
+        # Measured over four runs (2026-07-21), TWO of them flew three of four
+        # gates and reported completion, on both worlds. The operator is the only
+        # one who knows the real number, because they placed the gates.
+        # 0 = unset = the old behaviour, so no existing run changes its verdict.
+        self.expect = _arg_int('--expect', 0)
 
     # GuidedNode stores the MAVLink State in self.state; this node needs that
     # name for the mission state, so redirect it.
@@ -212,6 +251,10 @@ class MissionFSM(GuidedNode):
             return None
         return min(left, key=lambda k: np.linalg.norm(self.gates[k][0] - drone))
 
+    def _detect(self, msg):
+        if msg.poses:
+            self.t_detect = time.time()
+
     def check_timeouts(self, now, drone):
         """Give up on the gate that has been the target for too long."""
         k = self.target(drone)
@@ -227,9 +270,26 @@ class MissionFSM(GuidedNode):
 
     def mission_over(self, now):
         """Every known gate done, and the map has been quiet long enough that
-        no more are coming."""
-        return (bool(self.gates) and len(self.done) == len(self.gates)
-                and now - self.t_quiet > END_QUIET)
+        no more are coming.
+
+        "Quiet" counts DETECTIONS, not just map growth. N5 turns a closing sweep
+        when the course goes still, and a gate it finds there needs CONFIRM_HITS
+        sightings before it can reach the map at all -- ending the mission on a
+        20 s map timer would RTL in the middle of that, which is how a gate that
+        was seen once still got dropped (measured, two runs of four).
+
+        END_MAX is the hard ceiling, because a gate ALREADY passed can sit in
+        frame indefinitely and would otherwise hold the drone up until the
+        battery ended the argument.
+        """
+        if not (bool(self.gates) and len(self.done) == len(self.gates)):
+            self.t_all_done = 0.0
+            return False
+        if not self.t_all_done:
+            self.t_all_done = now
+        quiet = max(self.t_quiet, self.t_detect)
+        return (now - quiet > END_QUIET
+                or now - self.t_all_done > END_MAX)
 
     def xyz(self):
         p = self.pose.pose.position
@@ -304,6 +364,16 @@ class MissionFSM(GuidedNode):
                                                       len(self.gates)))
             for k in sorted(self.done):
                 self.get_logger().info('  vong {}: {}'.format(k, self.done[k]))
+            # ...and say plainly if the course had gates this run never met. The
+            # landing itself is unchanged: holding position until a gate turns up
+            # would keep a drone airborne on a dead course until the battery
+            # decided the matter. What was wrong was the VERDICT, not the RTL.
+            missing = self.expect - len(self.gates)
+            if self.expect and missing > 0:
+                self.get_logger().error(
+                    'THIEU {} vong: san co {}, drone chi tung thay {}.'
+                    ' Day KHONG phai mot chuyen bay tron ven.'
+                    .format(missing, self.expect, len(self.gates)))
 
     def run(self):
         self._publish()                      # latch an empty list for N4 at once
@@ -356,6 +426,7 @@ def _selfcheck():
     node = MissionFSM.__new__(MissionFSM)
     node.gates, node.prev, node.done = {}, {}, {}
     node.active, node.t_active, node.t_quiet = None, 0.0, time.time()
+    node.t_detect, node.t_all_done = 0.0, 0.0
     logs = []
     node._publish = lambda: None
     node.get_logger = lambda: type('L', (), {
@@ -407,6 +478,24 @@ def _selfcheck():
     now = time.time()
     assert not node.mission_over(now)
     assert node.mission_over(now + END_QUIET + 1)
+
+    # --- REGRESSION: a gate SEEN during N5's closing sweep must hold the ending.
+    # Two runs of four ended with a gate that had been detected once and needed
+    # CONFIRM_HITS more sightings; a quiet timer that only watches the MAP calls
+    # the course over while the drone is still staring at the thing.
+    node.t_all_done = 0.0
+    node.t_detect = now + END_QUIET          # still seeing something out there
+    assert not node.mission_over(now + END_QUIET + 1), \
+        'dang nhin thay vong ma van ket thuc'
+    # the ceiling runs from when the last KNOWN gate was done, which is the first
+    # tick above -- not from `now`, or this asserts nothing.
+    t_done = node.t_all_done
+    # ...and it is a ceiling: a gate already passed can sit in frame for ever,
+    # so END_MAX ends the flight whatever the detector is still reporting.
+    node.t_detect = t_done + END_MAX + 10
+    assert node.mission_over(t_done + END_MAX + 1), \
+        'detection lien tuc giu drone bay qua tran END_MAX'
+    node.t_detect, node.t_all_done = 0.0, 0.0
 
     assert outside([0, 0, 20]) and outside([100, 0, 3]) and not outside([1, 2, 3])
 
