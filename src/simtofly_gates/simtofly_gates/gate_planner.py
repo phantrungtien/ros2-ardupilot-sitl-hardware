@@ -74,6 +74,13 @@ CORRIDOR_R = 0.40          # m; carved tube radius (< ring hole 0.75 m)
 CORRIDOR_LEN = 1.5         # m; tube length through the ring centre
 
 STEP = 0.5                 # m between resampled waypoints
+STRAY_R = 1.0              # m from the nearest point of its own path before the
+                           # drone counts as no longer on it. Deliberately LOOSER
+                           # than N5's TRACK_HOLD of 0.5 m: N5 already holds and
+                           # re-seeds at 0.5, so anything under 1.0 is a case it
+                           # handles itself, and replanning there would fire on
+                           # ordinary cruise lag and turn replans back into the
+                           # metronome the note below fought off.
 REPLAN_GATE_SHIFT = 0.3    # m; target moved more than this -> replan (plan par. 4.5)
 PASSED_R = 1.0             # m; a gate matches an N6 /mission/passed entry within
                            # this. Same value as N6's KEY_R -- both are matching
@@ -620,8 +627,19 @@ def _build_node():
             # 47 of 51 replans on one 4-gate run were 'path blocked', firing on
             # every 2 Hz tick and making N5 rebuild its trajectory 54 times. A
             # replan is supposed to be an event (par. 4.5); that was a metronome.
-            i = int(np.argmin([float(np.linalg.norm(q - self.drone))
-                               for q in self.path]))
+            d = [float(np.linalg.norm(q - self.drone)) for q in self.path]
+            i = int(np.argmin(d))
+            # The drone is not ON its own path any more, so the path starts from
+            # somewhere it no longer is and N5 cannot build a segment out of it.
+            # This is not hypothetical: N4 planned to the z = 6 gate while N5 was
+            # still turning through the opening sweep at z = 5.2, N5 only read
+            # that path after coming back down to z = 3.7, and no segment could
+            # be built from it. Nothing above notices -- the target had not moved
+            # and the path was not blocked -- so N4 sat happy for 58 s while N5
+            # logged KET, until N6's 90 s timeout threw the gate away. A stuck N5
+            # cannot ask for a replan; this is N4 noticing on its own.
+            if d[i] > STRAY_R:
+                return 'drone strayed {:.1f} m off the path'.format(d[i])
             if path_blocked(self.grid, occ, self.path, ahead_from=i):
                 return 'path blocked'
             return None            # plan par. 4.5: event-driven only, never periodic
