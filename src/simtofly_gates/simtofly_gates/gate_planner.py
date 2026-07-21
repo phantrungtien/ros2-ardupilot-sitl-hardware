@@ -55,10 +55,12 @@ from scipy import sparse
 from scipy.sparse import csgraph
 
 try:
+    from simtofly_gates.gate_order import pick_gate
     from simtofly_gates.voxel_map import (
         VoxelGrid, backproject_depth, quat_to_matrix,
         INFLATE_R, MAP_FRAME, DEPTH_TOPIC, BUILD_HZ)
 except ImportError:                       # running the file directly
+    from gate_order import pick_gate
     from voxel_map import (
         VoxelGrid, backproject_depth, quat_to_matrix,
         INFLATE_R, MAP_FRAME, DEPTH_TOPIC, BUILD_HZ)
@@ -447,6 +449,7 @@ def _build_node():
             self.passed = []           # centres N6 has judged done, from /mission/passed
             self.have_n6 = False       # heard from N6 at all? see pick_target
             self.drone = None
+            self.home = None           # first pose seen; see gate_order.pick_gate
             self.path = None           # last published, world coords
             self.target = None         # centre of the gate the path was built for
             self.gate_normal = None
@@ -580,6 +583,9 @@ def _build_node():
         def on_pose(self, msg):
             p = msg.pose.position
             self.drone = np.array([p.x, p.y, p.z])
+            if self.home is None:
+                self.home = self.drone.copy()   # launch point: fixes which way
+                                                # is "in front" for gate_order
 
         def on_passed(self, msg):
             self.passed = [np.array([p.position.x, p.position.y, p.position.z])
@@ -587,7 +593,7 @@ def _build_node():
             self.have_n6 = True
 
         def pick_target(self):
-            """Nearest gate that is not done yet.
+            """The gate to fly next -- gate_order.pick_gate, shared with N6.
 
             "Done" belongs to N6, which runs the par. 7 R3 test -- interpolate
             the plane crossing, measure the off-axis miss there. The local
@@ -604,7 +610,10 @@ def _build_node():
                 ahead = [(c, n) for c, n in self.gates if n @ (self.drone - c) <= 0]
             if not ahead:
                 return None
-            return min(ahead, key=lambda g: np.linalg.norm(g[0] - self.drone))
+            i = pick_gate([c for c, _ in ahead], self.drone,
+                          self.home if self.home is not None else self.drone,
+                          [c for c, _ in self.gates])
+            return ahead[i]
 
         def needs_replan(self, centre):
             if self.path is None or self.target is None:

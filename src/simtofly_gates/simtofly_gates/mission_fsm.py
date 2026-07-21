@@ -43,6 +43,11 @@ import time
 
 import numpy as np
 import rclpy
+
+try:
+    from simtofly_gates.gate_order import pick_gate
+except ImportError:                       # running the file directly
+    from gate_order import pick_gate
 from geometry_msgs.msg import Pose, PoseArray
 from rclpy.qos import (QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile,
                        QoSReliabilityPolicy)
@@ -140,6 +145,7 @@ class MissionFSM(GuidedNode):
         self.t_detect = 0.0
         self.t_all_done = 0.0   # when the last KNOWN gate was finished
         self.gates = {}         # key -> (centre, unit normal), as the DRONE believes
+        self.home = None        # launch point; see gate_order.pick_gate
         self.prev = {}          # key -> (position, signed distance) last pose
         self.done = {}          # key -> reason string
         self.active = None      # key of the gate N4 is flying at right now
@@ -196,6 +202,10 @@ class MissionFSM(GuidedNode):
             self.gates[k] = (C, n / (np.linalg.norm(n) + 1e-12))
 
     def _on_pose(self, q):
+        if self.home is None:
+            self.home = q.copy()    # same latch as N4's on_pose: both must call
+                                    # gate_order with the SAME launch point or
+                                    # they can classify a gate differently
         for k, (C, n) in self.gates.items():
             if k in self.done:
                 continue
@@ -242,14 +252,20 @@ class MissionFSM(GuidedNode):
         self.pub.publish(msg)
 
     def target(self, drone):
-        """The gate N4 is flying at: nearest un-done one. Mirrors N4's
-        pick_target so the timeout below measures the gate actually being
-        chased -- N6 does not tell N4 which gate to fly, it only tells it which
-        ones are finished, and both then agree on 'nearest of what is left'."""
+        """The gate N4 is flying at.
+
+        Same call as N4's pick_target, on purpose: N6 does not tell N4 which
+        gate to fly, it only tells it which ones are finished, so the timeout
+        below only measures the right gate while both agree. They used to be
+        two hand-copies of `min(left, key=distance)`; the rule lives in
+        gate_order now so they cannot drift apart."""
         left = [k for k in self.gates if k not in self.done]
         if not left:
             return None
-        return min(left, key=lambda k: np.linalg.norm(self.gates[k][0] - drone))
+        i = pick_gate([self.gates[k][0] for k in left], drone,
+                      self.home if self.home is not None else drone,
+                      [C for C, _ in self.gates.values()])
+        return left[i]
 
     def _detect(self, msg):
         if msg.poses:
@@ -425,6 +441,7 @@ def _selfcheck():
 
     node = MissionFSM.__new__(MissionFSM)
     node.gates, node.prev, node.done = {}, {}, {}
+    node.home = None
     node.active, node.t_active, node.t_quiet = None, 0.0, time.time()
     node.t_detect, node.t_all_done = 0.0, 0.0
     logs = []
