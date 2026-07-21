@@ -76,8 +76,11 @@ END_MAX = 75.0          # s after the last known gate is done, whatever is still
                         # in frame. A gate already passed can stay in view for
                         # ever, and without a ceiling the detection-aware quiet
                         # timer below would hold the drone up until the battery
-                        # settled it. Long enough for N5's closing sweep (one
-                        # turn at SCAN_YAW_RATE is 12.6 s, plus stares).
+                        # settled it.
+                        # This number was sized to cover N5's closing sweep,
+                        # which no longer exists -- so it is now just a generous
+                        # ceiling with no measurement behind the exact value.
+                        # Anything comfortably above END_QUIET would do.
 END_QUIET = 20.0        # s with every known gate done and no new one confirmed
                         # -> the course is finished.
 TICK_HZ = 10.0
@@ -288,11 +291,12 @@ class MissionFSM(GuidedNode):
         """Every known gate done, and the map has been quiet long enough that
         no more are coming.
 
-        "Quiet" counts DETECTIONS, not just map growth. N5 turns a closing sweep
-        when the course goes still, and a gate it finds there needs CONFIRM_HITS
-        sightings before it can reach the map at all -- ending the mission on a
-        20 s map timer would RTL in the middle of that, which is how a gate that
-        was seen once still got dropped (measured, two runs of four).
+        "Quiet" counts DETECTIONS, not just map growth. A gate first seen late
+        in the run needs CONFIRM_HITS sightings before it can reach the map at
+        all, so a 20 s timer watching only the MAP calls the course over while
+        N1 is still looking straight at a gate that is about to appear on it --
+        which is how a gate that had been seen once still got dropped (measured,
+        two runs of four).
 
         END_MAX is the hard ceiling, because a gate ALREADY passed can sit in
         frame indefinitely and would otherwise hold the drone up until the
@@ -496,10 +500,10 @@ def _selfcheck():
     assert not node.mission_over(now)
     assert node.mission_over(now + END_QUIET + 1)
 
-    # --- REGRESSION: a gate SEEN during N5's closing sweep must hold the ending.
+    # --- REGRESSION: a gate still being SEEN must hold the ending open.
     # Two runs of four ended with a gate that had been detected once and needed
     # CONFIRM_HITS more sightings; a quiet timer that only watches the MAP calls
-    # the course over while the drone is still staring at the thing.
+    # the course over while the drone is still looking straight at the thing.
     node.t_all_done = 0.0
     node.t_detect = now + END_QUIET          # still seeing something out there
     assert not node.mission_over(now + END_QUIET + 1), \
