@@ -131,6 +131,15 @@ MIN_SEG_LEN = 0.15         # m; a target nearer than this is not worth a segment
 SCAN_LEVELS = (0.0, 1.5, 3.0)   # m above TAKEOFF_ALT, one full turn at each
 SCAN_YAW_RATE = 0.5             # rad/s; a turn takes 2*pi/rate = 12.6 s
 SCAN_CLIMB_S = 4.0              # s allowed to reach each level before turning
+# A CLOSING sweep -- one turn where the run ended, to catch a gate the drone flew
+# past -- was tried here and removed on 2026-07-21. It found nothing (it stared
+# straight at the missing gate for 60 s across a whole batch and never got it
+# onto the map, because the gate was being dropped in N2's TF lookup, not missed
+# by the camera), and it could eat an entire flight: its idle timer counted the
+# time spent in the OPENING sweep, so on one run it fired the instant the opening
+# sweep ended and held the follower for the rest of the mission -- planner
+# publishing paths the whole time, drone parked, all three gates timed out.
+# The real fix was gate_tracker._tf_for. Do not re-add this without one.
 
 MASK_PVA = 2048            # pos+vel+accel+yaw (ignore yaw_rate only)
 MASK_FALLBACK = 2496       # pos+vel+yaw -- if a firmware ever drops accel
@@ -662,6 +671,28 @@ def _build_node():
                                                   np.asarray(a, float).copy())
             self.cmd_log.append((time.time(), self.cmd_p))
 
+        def _turn_circle(self, goal, yaw):
+            """One full turn on the spot at `goal`, walking the yaw setpoint."""
+            turned, t_prev, said = 0.0, time.time(), 0
+            while rclpy.ok() and turned < 2.0 * math.pi:
+                now = time.time()
+                step = SCAN_YAW_RATE * (now - t_prev)
+                t_prev = now
+                turned += step
+                yaw += step
+                self._publish(goal, np.zeros(3), np.zeros(3),
+                              math.atan2(math.sin(yaw), math.cos(yaw)))
+                rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
+                # does the vehicle actually FOLLOW a yaw setpoint? Commanded
+                # vs measured, every quarter turn.
+                if turned > said * math.pi / 2:
+                    said += 1
+                    self.get_logger().info(
+                        '  quay: ra lenh {:+.0f} deg, do duoc {:+.0f} deg'
+                        .format(math.degrees(math.atan2(math.sin(yaw),
+                                                        math.cos(yaw))),
+                                math.degrees(self.heading_enu())))
+
         def opening_sweep(self):
             """Climb through SCAN_LEVELS, turning a full circle at each.
 
@@ -685,26 +716,7 @@ def _build_node():
                     rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
                     if abs(self._xyz()[2] - goal[2]) < 0.2:
                         break
-                # ...then one full turn on the spot
-                turned, t_prev, said = 0.0, time.time(), 0
-                while rclpy.ok() and turned < 2.0 * math.pi:
-                    now = time.time()
-                    step = SCAN_YAW_RATE * (now - t_prev)
-                    t_prev = now
-                    turned += step
-                    yaw += step
-                    self._publish(goal, np.zeros(3), np.zeros(3),
-                                  math.atan2(math.sin(yaw), math.cos(yaw)))
-                    rclpy.spin_once(self, timeout_sec=1.0 / STREAM_HZ)
-                    # does the vehicle actually FOLLOW a yaw setpoint? Commanded
-                    # vs measured, every quarter turn.
-                    if turned > said * math.pi / 2:
-                        said += 1
-                        self.get_logger().info(
-                            '  quay: ra lenh {:+.0f} deg, do duoc {:+.0f} deg'
-                            .format(math.degrees(math.atan2(math.sin(yaw),
-                                                            math.cos(yaw))),
-                                    math.degrees(self.heading_enu())))
+                self._turn_circle(goal, yaw)
                 self.get_logger().info(
                     'quet tang {}/{} xong o z={:.1f} m'.format(
                         lvl + 1, len(SCAN_LEVELS), goal[2]))
