@@ -73,3 +73,7 @@ Thumbs.db
 
 # SITL parameter dumps written at runtime
 mav.parm
+
+# Knowledge-graph cache built from this repo by the graphify tool. Derived from
+# the source, rebuildable, and 1.8 MB of it -- nothing here belongs in history.
+graphify-out/
