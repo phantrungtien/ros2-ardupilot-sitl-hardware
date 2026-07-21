@@ -299,6 +299,12 @@ def _fail_str(fail):
     return out
 
 
+LAST_CORNER_V = []         # corner speed as a fraction of v_cruise, one per
+                           # interior waypoint of the last build_segments().
+                           # Reported so a course that has quietly become a crawl
+                           # says WHICH corner is doing it.
+
+
 def build_segments(points, yaws, p0, v0, a0,
                    v_cruise=V_CRUISE, corridor_r=CORRIDOR_R):
     """Chain of (Trajectory, yaw) from the current state through `points`.
@@ -318,6 +324,7 @@ def build_segments(points, yaws, p0, v0, a0,
     special-cases the traverse -- it falls out, PROVIDED Tf is not clamped by
     TF_MIN, which is why the assert below guards that.
     """
+    del LAST_CORNER_V[:]
     pts, yaws = merge_collinear(points, yaws)
     # Drop the part of the path the drone has already flown. A path is latched
     # (TRANSIENT_LOCAL) and N4 only republishes on a replan, so by the time this
@@ -360,7 +367,42 @@ def build_segments(points, yaws, p0, v0, a0,
             continue
         Tf = max(d / v_cruise, TF_MIN)
         if k + 2 < len(pts):
-            v_target = v_cruise * _unit(pts[k + 2] - pts[k])
+            # ARRIVE at a corner at a speed the corner can take.
+            #
+            # This used to be v_cruise flat, whatever the corner looked like, and
+            # a path that doubles back -- which is every path to a gate BEHIND
+            # the drone -- has corners near 180 deg. Flown: a 0.17 m segment with
+            # a 52 deg kink entered at 0.80 m/s was refused at EVERY duration
+            # solve() tried (a=88% j=170% at T=2.7 s), the chain came back empty,
+            # ten paths in a row produced nothing, and the drone hovered 17 s
+            # until N6 timed the course out. That run scored 4/4 only because
+            # every gate was already behind it; one gate still open and it fails.
+            #
+            # Stretching Tf cannot rescue it -- 0.80 m/s for 2.7 s is 2.16 m of
+            # travel with 0.17 m to spend it in, so the quintic must decelerate,
+            # reverse, and run back up, which costs MORE jerk than the short
+            # version. mueller.solve()'s "stretching ALWAYS helps" is false in
+            # exactly this regime, and stretching is the only knob it has.
+            #
+            # Measured, sweeping this waypoint's speed alone does nothing (jerk
+            # 1.13 -> 1.04 from full cruise down to 20%): the segment is
+            # over-constrained at BOTH ends. What works is that this vector is
+            # the exit of segment k and the ENTRY of segment k+1 at once, so
+            # capping it slows both sides of the corner together.
+            #
+            # cos^2(theta/2): full cruise on a straight run, zero at a reversal.
+            # Measured over 36 hairpin variants (corner tightness x approach
+            # offset x entry speed 0.6-1.0 m/s): 0 failures, worst peak jerk 96%
+            # of limit. cos(theta/2) alone still failed 7/7 at this tolerance.
+            #
+            # The geometry never moves, so N4's corridor clearance argument holds
+            # exactly -- which merging the corner away would have spent.
+            a_in = _unit(pts[k + 1] - pts[k])
+            a_out = _unit(pts[k + 2] - pts[k + 1])
+            turn = math.acos(float(np.clip(a_in @ a_out, -1.0, 1.0)))
+            corner = math.cos(turn / 2.0) ** 2
+            LAST_CORNER_V.append(corner)
+            v_target = v_cruise * corner * _unit(pts[k + 2] - pts[k])
         else:
             v_target = np.zeros(3)        # the path ends stopped
         traj, _ = solve(state_p, state_v, state_a, target, v_target, np.zeros(3),
@@ -497,9 +539,12 @@ def _build_node():
                 self.get_logger().warn(
                     'duong bi cat ngan: dung o {} vi doan ke tiep khong kha thi'
                     ' [{}]'.format(np.round(end, 2), _fail_str(why)))
+            slowest = min(LAST_CORNER_V) if LAST_CORNER_V else 1.0
             self.get_logger().info(
-                'quy dao moi #{}: {} doan, {:.1f} s, a_dinh {:.2f} m/s2, ket tai {}'
-                .format(self.n_replan, n_seg, total, a_peak, np.round(end, 2)))
+                'quy dao moi #{}: {} doan, {:.1f} s, a_dinh {:.2f} m/s2,'
+                ' goc cua cham nhat {:.0%} v_cruise, ket tai {}'
+                .format(self.n_replan, n_seg, total, a_peak, slowest,
+                        np.round(end, 2)))
 
         def stream(self):
             """One 20 Hz tick. MUST publish something every time."""
@@ -866,6 +911,26 @@ def _selfcheck():
                 t.acceleration(np.linspace(0, t.T, 600)[k])
     assert hit is not None, 'khong doan nao qua tam vong'
     assert np.allclose(hit[0], V_CRUISE * n, atol=1e-3), hit[0]
+
+    # --- REGRESSION: a path that DOUBLES BACK, which is every path to a gate
+    # behind the drone. Dijkstra rounds the hairpin on 0.2 m voxels and simplify()
+    # keeps both apex corners, leaving a 0.17 m segment with a 52 deg kink entered
+    # at cruise. With a flat v_cruise corner target that segment is infeasible at
+    # every duration solve() tries, build_segments returned a one-segment chain,
+    # and the drone hovered until N6 timed the course out (flown 2026-07-20).
+    hp = [np.array([0.0, 0.0, 3.5]), np.array([0.6, 0.0, 3.5]),
+          np.array([1.0, 0.0, 3.5]), np.array([1.2, 0.06, 3.5]),
+          np.array([1.3, 0.2, 3.5]), np.array([1.3, 0.4, 3.5]),
+          np.array([1.2, 0.54, 3.5]), np.array([1.0, 0.6, 3.5]),
+          np.array([0.4, 0.6, 3.5]), np.array([-0.6, 0.6, 3.5])]
+    hseg, hok = build_segments(hp, [0.0] * len(hp), hp[0],
+                               V_CRUISE * np.array([1.0, 0.0, 0.0]), np.zeros(3))
+    assert hok and len(hseg) > 1, \
+        'duong quay dau lai lam chuoi gay: {} doan, complete={}'.format(
+            len(hseg), hok)
+    # and the corner really is being slowed -- if this ever reads 100% the cap
+    # has been bypassed and the assert above is passing for some other reason
+    assert min(LAST_CORNER_V) < 0.85, LAST_CORNER_V
     # Par. 5.4 asks for no push OFF the axis while crossing; a whisper of
     # along-axis accel is not that. This used to be one |a| < 1e-4 test, which
     # conflated the two, and simplify() moved the along-axis term to 3.5e-3
