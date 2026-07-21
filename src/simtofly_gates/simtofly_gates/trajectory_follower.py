@@ -523,11 +523,32 @@ def _build_node():
                 # recoverable from outside (N4 replans, or N6 times the gate
                 # out), so say so once it is clearly not a transient.
                 self.n_empty += 1
-                if self.n_empty == EMPTY_PATH_STUCK:
-                    self.get_logger().error(
-                        'KET: {} path lien tiep khong sinh duoc doan nao -- '
-                        'drone dang treo, cho N4 replan hoac N6 het gio'
-                        .format(self.n_empty))
+                if self.n_empty >= EMPTY_PATH_STUCK:
+                    # Stop re-seeding THIS path. build_segments is a pure
+                    # function of (path, cmd_p, cmd_v, cmd_a), and by now the
+                    # drone is parked -- cmd_v and cmd_a are zero and cmd_p is
+                    # not moving -- so every retry feeds it identical arguments
+                    # and gets the identical empty answer. Retrying a 301st time
+                    # is not persistence, it is a busy-wait.
+                    #
+                    # This fired on EVERY successful run: the last path of a
+                    # mission leads to the final gate, the drone flies through
+                    # it, and from the far side no segment can be built out of
+                    # waypoints that are all behind. An ERROR that cries "drone
+                    # dang treo" on 4 out of 4 clean runs is worse than no error
+                    # at all -- it is exactly what made the real hang, the one
+                    # that cost a gate, invisible for a day.
+                    #
+                    # Dropping last_path does not strand anything: on_path
+                    # adopts whatever N4 publishes next, and N4 now notices a
+                    # stale plan itself (gate_planner STRAY_R). N6's
+                    # GATE_TIMEOUT remains the ceiling.
+                    if self.last_path is not None:
+                        self.get_logger().info(
+                            'khong dung duoc doan nao tu path nay sau {} lan --'
+                            ' thoi gieo lai, cho N4 phat duong moi'
+                            .format(self.n_empty))
+                        self.last_path = None
                 else:
                     self.get_logger().warn(
                         'path moi khong sinh duoc doan nao -- giu vi tri',
